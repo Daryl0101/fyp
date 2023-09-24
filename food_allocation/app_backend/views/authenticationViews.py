@@ -17,7 +17,7 @@ from app_backend.decorators import response_handler
 from app_backend.services.authenticationServices import *
 
 
-class AuthenticationViewset(viewsets.GenericViewSet):
+class AuthenticationViews(viewsets.GenericViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
