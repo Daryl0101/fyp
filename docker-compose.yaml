@@ -1,0 +1,17 @@
+version: '1'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_volume_fyp:/var/lib/postgresql/data
+volumes:
+  postgres_volume_fyp:
+    external: true
