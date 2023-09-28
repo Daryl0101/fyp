@@ -1,6 +1,10 @@
 # Start all containers
 docker-compose up -d
 
+if (!$?){
+    exit 1
+}
+
 # Activate the virtual environment
 & .\env\Scripts\Activate
 
