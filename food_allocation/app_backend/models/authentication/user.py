@@ -3,10 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from django.db import models
 
-from app_backend.models.base.common_model import CommonModel
 
-
-class User(AbstractUser, CommonModel):
+class User(AbstractUser):
     id = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
@@ -22,3 +20,5 @@ class User(AbstractUser, CommonModel):
     profile_img_url = models.URLField(
         default=None, null=True, validators=[validators.URLValidator()]
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)

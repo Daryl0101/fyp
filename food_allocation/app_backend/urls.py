@@ -1,22 +1,26 @@
 from django.urls import include, path
-from app_backend.routers import router
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
 
+sectionpatterns = [
+    path("authentication/", include("app_backend.url_paths.authenticationUrls")),
+    path("master-data/", include("app_backend.url_paths.masterDataUrls")),
+]
+
 urlpatterns = [
-    path("api/v1/", include((router.urls, "v1"), namespace="v1")),
+    path("v1/", include((sectionpatterns, "v1"))),
     # region Documentation
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "api/schema/swagger-ui/",
+        "schema/swagger-ui/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
     path(
-        "api/schema/redoc/",
+        "schema/redoc/",
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),

@@ -1,5 +1,7 @@
+import datetime
 import operator
 from typing import Optional, Type
+from django.db import models
 from rest_framework import serializers
 from app_backend.constants import FAILED_DICT, SUCCESS_DICT
 from app_backend.enums import ActionType
@@ -9,12 +11,11 @@ from app_backend.models.authentication.user import User
 
 def setCreateUpdateProperty(model, userObject: User, actionType: ActionType):
     try:
-        if model or userObject is None:
+        if model is None or userObject is None:
             raise serializers.ValidationError("Model or UserObject is None")
+        model.modified_by = userObject.id
         if actionType == ActionType.CREATE:
-            model.created_by = userObject
-        if actionType == ActionType.UPDATE:
-            model.modified_by = userObject
+            model.created_by = userObject.id
     except Exception as ex:
         raise ex
 
@@ -131,3 +132,21 @@ def baseResponseSerializerGenerator(
                 """
             )
         )
+
+
+def enumToDict(model: type[models.Choices]):
+    """
+    Convert Django Enum to Dict
+    """
+    choices: list(dict(str | int, str)) = []
+    for name, value in model.choices:
+        choices.append({"key": name, "value": value})
+    return choices
+
+
+def isBlank(string: str) -> bool:
+    return string in (None, "") or not string.strip()
+
+
+def now() -> datetime.datetime.now:
+    return datetime.datetime.now(tz=datetime.timezone.utc)

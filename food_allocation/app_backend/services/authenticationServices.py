@@ -39,7 +39,7 @@ def processRegisterUser(request):
     if access_token is None:
         raise serializers.ValidationError("Token creation failed")
 
-    responseSerializer = AuthenticationLoginResponse(
+    response_serializer = AuthenticationLoginResponse(
         data={
             "username": user.username,
             "email": user.email,
@@ -47,7 +47,7 @@ def processRegisterUser(request):
         }
     )
 
-    return responseSerializer.initial_data
+    return response_serializer.initial_data
 
 
 def processLoginUser(request):
@@ -71,7 +71,7 @@ def processLoginUser(request):
     # Login user
     login(request, user)
 
-    responseSerializer = AuthenticationLoginResponse(
+    response_serializer = AuthenticationLoginResponse(
         data={
             "username": user.username,
             "email": user.email,
@@ -79,7 +79,7 @@ def processLoginUser(request):
         }
     )
 
-    return responseSerializer.initial_data
+    return response_serializer.initial_data
 
 
 def processLogoutUser(request):
@@ -96,7 +96,7 @@ def processDisplayUserProfile(request):
     if request.user is None:
         raise serializers.ValidationError("User does not exist")
 
-    responseSerializer = AuthenticationProfileResponse(
+    response_serializer = AuthenticationProfileResponse(
         data={
             "username": request.user.username,
             "email": request.user.email,
@@ -107,4 +107,4 @@ def processDisplayUserProfile(request):
         }
     )
 
-    return responseSerializer.initial_data
+    return response_serializer.initial_data

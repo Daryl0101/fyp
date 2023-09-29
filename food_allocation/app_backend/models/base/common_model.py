@@ -2,12 +2,11 @@ import uuid
 from django.db import models
 
 
-class CommonModel:
+class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        "User", on_delete=models.DO_NOTHING, default=uuid.UUID(int=0)
-    )
-    modified_by = models.ForeignKey(
-        "User", on_delete=models.DO_NOTHING, default=uuid.UUID(int=0)
-    )
+    created_by = models.UUIDField()
+    modified_by = models.UUIDField()
+
+    class Meta:
+        abstract = True
