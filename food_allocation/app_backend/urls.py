@@ -8,6 +8,7 @@ from drf_spectacular.views import (
 sectionpatterns = [
     path("authentication/", include("app_backend.url_paths.authenticationUrls")),
     path("master-data/", include("app_backend.url_paths.masterDataUrls")),
+    path("system-reference/", include("app_backend.url_paths.systemReferenceUrls")),
 ]
 
 urlpatterns = [

@@ -12,62 +12,49 @@ from app_backend.services.authenticationServices import (
     processLogoutUser,
     processRegisterUser,
 )
-from app_backend.utils import baseResponseSerializerGenerator
+from app_backend.utils import schemaWrapper
 from rest_framework.decorators import (
-    action,
     api_view,
     authentication_classes,
     permission_classes,
 )
-from rest_framework import serializers, viewsets
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from app_backend.serializers.authentication.request.authenticationLoginRequest import (
     AuthenticationLoginRequest,
 )
-from app_backend.serializers.authentication.response.authenticationLoginResponse import (
-    AuthenticationLoginResponse,
+from app_backend.serializers.authentication.response.authenticationRegisterLoginResponse import (
+    AuthenticationRegisterLoginResponse,
 )
 from app_backend.decorators import response_handler
 
 
 @extend_schema(
     request=AuthenticationRegisterRequest,
-    responses={
-        200: baseResponseSerializerGenerator(
-            model=AuthenticationLoginResponse(allow_null=True)
-        )
-    },
+    responses={200: schemaWrapper(AuthenticationRegisterLoginResponse)},
 )
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([AllowAny])
-@response_handler(responses=AuthenticationLoginResponse(allow_null=True))
+@response_handler(responses=AuthenticationRegisterLoginResponse(allow_null=True))
 def authenticationRegister(request):
     return processRegisterUser(request)
 
 
 @extend_schema(
     request=AuthenticationLoginRequest,
-    responses={
-        200: baseResponseSerializerGenerator(
-            model=AuthenticationLoginResponse(allow_null=True)
-        )
-    },
+    responses={200: schemaWrapper(AuthenticationRegisterLoginResponse)},
 )
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([AllowAny])
-@response_handler(responses=AuthenticationLoginResponse(allow_null=True))
+@response_handler(responses=AuthenticationRegisterLoginResponse(allow_null=True))
 def authenticationLogin(request):
     return processLoginUser(request)
 
 
 @extend_schema(
-    responses={
-        200: baseResponseSerializerGenerator(
-            model=serializers.BooleanField(allow_null=True)
-        )
-    },
+    responses={200: schemaWrapper()},
 )
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
@@ -78,11 +65,7 @@ def authenticationLogout(request):
 
 
 @extend_schema(
-    responses={
-        200: baseResponseSerializerGenerator(
-            model=AuthenticationProfileResponse(allow_null=True)
-        )
-    },
+    responses={200: schemaWrapper(AuthenticationProfileResponse)},
 )
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])

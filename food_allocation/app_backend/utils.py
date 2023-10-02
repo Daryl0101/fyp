@@ -1,4 +1,5 @@
 import datetime
+import inspect
 import operator
 from typing import Optional, Type
 from django.db import models
@@ -76,7 +77,7 @@ def baseResponseSerializerGenerator(
     base_classes = (serializers.Serializer,)
     class_attrs = {
         "with_content": with_content,
-        "statusName": serializers.CharField(max_length=100, default="Success"),
+        "status_name": serializers.CharField(max_length=100, default="Success"),
         # "errors": serializers.DictField(
         #     allow_null=True,
         #     default={"errorCode": ""},
@@ -134,13 +135,52 @@ def baseResponseSerializerGenerator(
         )
 
 
+schema_count = 0
+
+
+def schemaWrapper(
+    model: type[serializers.Serializer]
+    # | dict
+    | serializers.Serializer
+    | serializers.ModelSerializer = None,
+):
+    """
+    Generate Schema Wrapper for Response
+    """
+    global schema_count
+    schema_count = schema_count + 1
+    treated_model = None
+    if model is not None:
+        if inspect.isclass(model):
+            treated_model = model()
+        else:
+            treated_model = model
+    class_name = (
+        f"SchemaWrapper_{treated_model.__class__.__name__}_{schema_count}"
+        if model is not None
+        else f"SchemaWrapper_{schema_count}"
+    )
+    base_classes = (serializers.Serializer,)
+    class_attrs = {
+        "model": treated_model
+        if model is not None
+        else serializers.BooleanField(default=True),
+        "status_name": serializers.CharField(max_length=100, default="Success"),
+        "errors": serializers.ListField(
+            child=serializers.CharField(max_length=100),
+            allow_null=True,
+        ),
+    }
+    return type(class_name, base_classes, class_attrs)
+
+
 def enumToDict(model: type[models.Choices]):
     """
     Convert Django Enum to Dict
     """
     choices: list(dict(str | int, str)) = []
-    for name, value in model.choices:
-        choices.append({"key": name, "value": value})
+    for id, name in model.choices:
+        choices.append({"id": id, "name": name})
     return choices
 
 

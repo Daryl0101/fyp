@@ -9,8 +9,8 @@ from app_backend.serializers.authentication.request.authenticationLoginRequest i
 from app_backend.serializers.authentication.request.authenticationRegisterRequest import (
     AuthenticationRegisterRequest,
 )
-from app_backend.serializers.authentication.response.authenticationLoginResponse import (
-    AuthenticationLoginResponse,
+from app_backend.serializers.authentication.response.authenticationRegisterLoginResponse import (
+    AuthenticationRegisterLoginResponse,
 )
 from app_backend.serializers.authentication.response.authenticationProfileResponse import (
     AuthenticationProfileResponse,
@@ -39,7 +39,7 @@ def processRegisterUser(request):
     if access_token is None:
         raise serializers.ValidationError("Token creation failed")
 
-    response_serializer = AuthenticationLoginResponse(
+    response_serializer = AuthenticationRegisterLoginResponse(
         data={
             "username": user.username,
             "email": user.email,
@@ -71,7 +71,7 @@ def processLoginUser(request):
     # Login user
     login(request, user)
 
-    response_serializer = AuthenticationLoginResponse(
+    response_serializer = AuthenticationRegisterLoginResponse(
         data={
             "username": user.username,
             "email": user.email,

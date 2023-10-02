@@ -5,6 +5,7 @@ from app_backend.models.master_data.family import Family
 from app_backend.models.master_data.food_restriction import FoodRestriction
 from app_backend.models.master_data.person import Person
 from app_backend.models.master_data.product import Product
+from app_backend.models.master_data.product_category import ProductCategory
 
 from app_backend.models.system_reference.food_category import FoodCategory
 from app_backend.models.system_reference.storage import Storage
@@ -25,4 +26,5 @@ admin.site.register(Family)
 admin.site.register(Product)
 admin.site.register(Person)
 admin.site.register(FoodRestriction)
+admin.site.register(ProductCategory)
 # endregion
