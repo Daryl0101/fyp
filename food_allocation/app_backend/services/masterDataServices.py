@@ -209,6 +209,16 @@ def processDeleteProduct(request, product_id):
     return result
 
 
+def retrieveProductsByNo(product_no: str, is_validation_required: bool):
+    if isBlank(product_no):
+        raise serializers.ValidationError("Invalid Product No")
+    products = Product.objects.filter(product_no__icontains=product_no)
+    if is_validation_required:
+        if products is None or len(products) <= 0:
+            raise serializers.ValidationError("Invalid Products")
+    return products
+
+
 # endregion
 
 

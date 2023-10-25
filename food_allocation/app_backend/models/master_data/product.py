@@ -20,8 +20,8 @@ class Product(BaseModel):
     protein_calorie = models.DecimalField(max_digits=10, decimal_places=2)
     fat_calorie = models.DecimalField(max_digits=10, decimal_places=2)
     is_halal = models.BooleanField(default=False)
-    total_qty = models.IntegerField(default=0)
-    available_qty = models.IntegerField(default=0)
+    # total_qty = models.IntegerField(default=0)
+    # available_qty = models.IntegerField(default=0)
     food_categories = models.ManyToManyField(
         FoodCategory,
         through="ProductCategory",
