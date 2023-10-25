@@ -12,9 +12,6 @@ class PersonCreateUpdateRequest(serializers.Serializer):
     height = serializers.DecimalField(max_digits=10, decimal_places=2)
     weight = serializers.DecimalField(max_digits=10, decimal_places=2)
     activity_level = serializers.ChoiceField(choices=ActivityLevel.choices)
-    food_restrictions = serializers.ListField(
-        child=serializers.IntegerField(), allow_empty=True
-    )
 
     def validate(self, data):
         if data["height"] <= 0:
@@ -23,13 +20,6 @@ class PersonCreateUpdateRequest(serializers.Serializer):
             raise serializers.ValidationError("Invalid weight")
         if data["birthdate"] > datetime.date.today():
             raise serializers.ValidationError("Invalid birthdate")
-        if data["food_restrictions"] is not None:
-            if list(filter(lambda x: x <= 0, data["food_restrictions"])):
-                raise serializers.ValidationError("Invalid food category id(s)")
-            if len(set(data["food_restrictions"])) != len(data["food_restrictions"]):
-                raise serializers.ValidationError(
-                    "Duplicate food category ids detected"
-                )
         return data
 
 
@@ -40,6 +30,9 @@ class FamilyCreateUpdateRequest(serializers.Serializer):
     phone_number = serializers.CharField(max_length=20)
     address = serializers.CharField(max_length=200, allow_blank=True)
     calorie_discount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    food_restrictions = serializers.ListField(
+        child=serializers.IntegerField(), allow_empty=True
+    )
     members = PersonCreateUpdateRequest(many=True)
 
     def validate(self, data):
@@ -47,6 +40,13 @@ class FamilyCreateUpdateRequest(serializers.Serializer):
             raise serializers.ValidationError("Invalid calorie discount")
         if data["household_income"] < 0:
             raise serializers.ValidationError("Invalid household income")
+        if data["food_restrictions"] is not None:
+            if list(filter(lambda x: x <= 0, data["food_restrictions"])):
+                raise serializers.ValidationError("Invalid food category id(s)")
+            if len(set(data["food_restrictions"])) != len(data["food_restrictions"]):
+                raise serializers.ValidationError(
+                    "Duplicate food category ids detected"
+                )
         if data["members"] is None or len(data["members"]) <= 0:
             raise serializers.ValidationError("At least 1 member is required")
         if len(

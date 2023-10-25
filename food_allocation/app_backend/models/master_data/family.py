@@ -1,6 +1,7 @@
 from django.db import models
 
 from app_backend.models.base.common_model import BaseModel
+from app_backend.models.system_reference.food_category import FoodCategory
 
 
 class Family(BaseModel):
@@ -13,3 +14,8 @@ class Family(BaseModel):
     address = models.CharField(max_length=200, blank=True)
     total_member = models.IntegerField(default=0)
     calorie_discount = models.DecimalField(max_digits=10, decimal_places=2)
+    food_restrictions = models.ManyToManyField(
+        FoodCategory,
+        through="FoodRestriction",
+        related_name="families",
+    )

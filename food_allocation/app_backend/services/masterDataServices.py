@@ -309,15 +309,17 @@ def processCreateFamily(request):
     request_parsed = FamilyCreateUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
-    members_request = request_parsed.new_members()
-    food_category_ids = [
-        x
-        for member_request in members_request
-        for x in member_request["food_restrictions"]
-    ]
+    # members_request = request_parsed.new_members()
+    # food_category_ids = [
+    #     x
+    #     for member_request in members_request
+    #     for x in member_request["food_restrictions"]
+    # ]
     food_categories = []
-    if len(food_category_ids) > 0:
-        food_categories = retrieveFoodCategoriesByIds(ids=food_category_ids)
+    if len(request_parsed.validated_data["food_restrictions"]) > 0:
+        food_categories = retrieveFoodCategoriesByIds(
+            ids=request_parsed.validated_data["food_restrictions"]
+        )
 
     family = Family(
         name=request_parsed.validated_data["name"],
@@ -326,7 +328,7 @@ def processCreateFamily(request):
         phone_number=request_parsed.validated_data["phone_number"],
         address=request_parsed.validated_data["address"],
         calorie_discount=request_parsed.validated_data["calorie_discount"],
-        total_member=len(members_request),
+        total_member=len(request_parsed.new_members()),
         last_received_date=date.today(),  # TODO: Set last received date as today for now
     )
     setCreateUpdateProperty(family, request.user, ActionType.CREATE)
@@ -335,9 +337,11 @@ def processCreateFamily(request):
 
     family.family_no = "F" + str(family.id).zfill(5)
 
+    family.food_restrictions.set(food_categories)
+
     family.save()
 
-    for member_request in members_request:
+    for member_request in request_parsed.new_members():
         person = Person(
             first_name=member_request["first_name"],
             last_name=member_request["last_name"],
@@ -352,11 +356,11 @@ def processCreateFamily(request):
 
         person.save()
 
-        person.food_restrictions.set(
-            [x for x in food_categories if x.id in member_request["food_restrictions"]]
-        )
+        # person.food_restrictions.set(
+        #     [x for x in food_categories if x.id in member_request["food_restrictions"]]
+        # )
 
-        person.save()
+        # person.save()
 
     result = True
 
@@ -377,15 +381,17 @@ def processUpdateFamily(request, family_id):
     request_parsed.is_valid(raise_exception=True)
 
     # Retrieve all related food categories
-    members_request = request_parsed.validated_data["members"]
-    food_category_ids = [
-        x
-        for member_request in members_request
-        for x in member_request["food_restrictions"]
-    ]
+    # members_request = request_parsed.validated_data["members"]
+    # food_category_ids = [
+    #     x
+    #     for member_request in members_request
+    #     for x in member_request["food_restrictions"]
+    # ]
     food_categories = []
-    if len(food_category_ids) > 0:
-        food_categories = retrieveFoodCategoriesByIds(ids=food_category_ids)
+    if len(request_parsed.validated_data["food_restrictions"]) > 0:
+        food_categories = retrieveFoodCategoriesByIds(
+            ids=request_parsed.validated_data["food_restrictions"]
+        )
 
     # Treat existing members
     existing_members_request = request_parsed.existing_members()
@@ -404,7 +410,8 @@ def processUpdateFamily(request, family_id):
     family.phone_number = request_parsed.validated_data["phone_number"]
     family.address = request_parsed.validated_data["address"]
     family.calorie_discount = request_parsed.validated_data["calorie_discount"]
-    family.total_member = len(members_request)
+    family.total_member = len(request_parsed.validated_data["members"])
+    family.food_restrictions.set(food_categories)
     members_to_remove = family.members.exclude(id__in=existing_member_ids_request)
     members_to_remove.delete()
     setCreateUpdateProperty(family, request.user, ActionType.UPDATE)
@@ -423,13 +430,13 @@ def processUpdateFamily(request, family_id):
         existing_member.height = existing_member_request["height"]
         existing_member.weight = existing_member_request["weight"]
         existing_member.activity_level = existing_member_request["activity_level"]
-        existing_member.food_restrictions.set(
-            [
-                x
-                for x in food_categories
-                if x.id in existing_member_request["food_restrictions"]
-            ]
-        )
+        # existing_member.food_restrictions.set(
+        #     [
+        #         x
+        #         for x in food_categories
+        #         if x.id in existing_member_request["food_restrictions"]
+        #     ]
+        # )
         setCreateUpdateProperty(existing_member, request.user, ActionType.UPDATE)
 
         existing_member.save()
@@ -450,14 +457,14 @@ def processUpdateFamily(request, family_id):
 
         person.save()
 
-        person.food_restrictions.set(
-            [
-                x
-                for x in food_categories
-                if x.id in new_member_request["food_restrictions"]
-            ]
-        )
-        person.save()
+        # person.food_restrictions.set(
+        #     [
+        #         x
+        #         for x in food_categories
+        #         if x.id in new_member_request["food_restrictions"]
+        #     ]
+        # )
+        # person.save()
 
     result = True
 

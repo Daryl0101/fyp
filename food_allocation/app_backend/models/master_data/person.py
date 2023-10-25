@@ -4,7 +4,6 @@ from django.db import models
 from app_backend.enums import ActivityLevel, Gender
 from app_backend.models.base.common_model import BaseModel
 from app_backend.models.master_data.family import Family
-from app_backend.models.system_reference.food_category import FoodCategory
 
 
 class Person(BaseModel):
@@ -21,8 +20,3 @@ class Person(BaseModel):
         default=None, null=True, validators=[validators.URLValidator()]
     )
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="members")
-    food_restrictions = models.ManyToManyField(
-        FoodCategory,
-        through="FoodRestriction",
-        related_name="persons",
-    )

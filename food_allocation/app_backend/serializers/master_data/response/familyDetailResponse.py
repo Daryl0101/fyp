@@ -12,8 +12,6 @@ class FoodRestrictionResponse(serializers.ModelSerializer):
 
 
 class PersonDetailResponse(serializers.ModelSerializer):
-    food_restrictions = FoodRestrictionResponse(many=True)
-
     class Meta:
         model = Person
         fields = [
@@ -25,11 +23,11 @@ class PersonDetailResponse(serializers.ModelSerializer):
             "height",
             "weight",
             "activity_level",
-            "food_restrictions",
         ]
 
 
 class FamilyDetailResponse(serializers.ModelSerializer):
+    food_restrictions = FoodRestrictionResponse(many=True)
     members = PersonDetailResponse(many=True)
 
     class Meta:
