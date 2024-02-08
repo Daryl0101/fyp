@@ -140,13 +140,25 @@ def processCreateProduct(request):
         ids=request_parsed.validated_data["food_categories"]
     )
 
+    product = Product.objects.filter(
+        name_iexact=request_parsed.validated_data["name"]
+    ).first()
+    if product is not None:
+        raise serializers.ValidationError("Product already exists")
+
     product = Product(
         name=request_parsed.validated_data["name"],
         description=request_parsed.validated_data["description"],
         serving_size=request_parsed.validated_data["serving_size"],
-        carbohydrate_calorie=request_parsed.validated_data["carbs_calorie"],
-        protein_calorie=request_parsed.validated_data["protein_calorie"],
-        fat_calorie=request_parsed.validated_data["fat_calorie"],
+        calorie=request_parsed.validated_data["calorie"],
+        carbohydrate=request_parsed.validated_data["carbohydrate"],
+        protein=request_parsed.validated_data["protein"],
+        fat=request_parsed.validated_data["fat"],
+        fiber=request_parsed.validated_data["fiber"],
+        sugar=request_parsed.validated_data["sugar"],
+        saturated_fat=request_parsed.validated_data["saturated_fat"],
+        cholesterol=request_parsed.validated_data["cholesterol"],
+        sodium=request_parsed.validated_data["sodium"],
         is_halal=request_parsed.validated_data["is_halal"],
     )
     setCreateUpdateProperty(product, request.user, ActionType.CREATE)
@@ -181,9 +193,15 @@ def processUpdateProduct(request, product_id):
     product.name = request_parsed.validated_data["name"]
     product.description = request_parsed.validated_data["description"]
     product.serving_size = request_parsed.validated_data["serving_size"]
-    product.carbohydrate_calorie = request_parsed.validated_data["carbs_calorie"]
-    product.protein_calorie = request_parsed.validated_data["protein_calorie"]
-    product.fat_calorie = request_parsed.validated_data["fat_calorie"]
+    product.calorie = request_parsed.validated_data["calorie"]
+    product.carbohydrate = request_parsed.validated_data["carbohydrate"]
+    product.protein = request_parsed.validated_data["protein"]
+    product.fat = request_parsed.validated_data["fat"]
+    product.fiber = request_parsed.validated_data["fiber"]
+    product.sugar = request_parsed.validated_data["sugar"]
+    product.saturated_fat = request_parsed.validated_data["saturated_fat"]
+    product.cholesterol = request_parsed.validated_data["cholesterol"]
+    product.sodium = request_parsed.validated_data["sodium"]
     product.is_halal = request_parsed.validated_data["is_halal"]
     product.food_categories.set(food_categories)
     setCreateUpdateProperty(product, request.user, ActionType.UPDATE)
