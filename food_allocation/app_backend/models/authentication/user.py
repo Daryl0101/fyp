@@ -21,7 +21,9 @@ class User(AbstractUser, BaseModel):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     profile_img_url = models.URLField(
-        default=None, null=True, validators=[validators.URLValidator()]
+        default=None,
+        null=True,
+        # , validators=[validators.URLValidator()]
     )
     gender = models.CharField(choices=Gender.choices)
     is_ngo_manager = models.BooleanField(default=False)
