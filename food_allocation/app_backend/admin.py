@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
+from app_backend.models.authentication.user import User
 from app_backend.models.base.common_model import BaseModel
 from app_backend.models.master_data.family import Family
 from app_backend.models.master_data.food_restriction import FoodRestriction

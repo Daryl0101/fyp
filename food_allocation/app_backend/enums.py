@@ -12,9 +12,9 @@ class ActionType(models.TextChoices):
     UPDATE = "UPDATE", _("Update")
 
 
-class Gender(models.IntegerChoices):
-    MALE = 1, _("Male")
-    FEMALE = 2, _("Female")
+class Gender(models.TextChoices):
+    MALE = "MALE", _("Male")
+    FEMALE = "FEMALE", _("Female")
 
 
 class ActivityLevel(models.IntegerChoices):
@@ -29,3 +29,8 @@ class HalalStatus(models.IntegerChoices):
     ALL = 0, _("All")
     HALAL = 1, _("Halal")
     NON_HALAL = 2, _("Non Halal")
+
+
+class Role(models.TextChoices):
+    MANAGER = "MANAGER", _("manager")
+    VOLUNTEER = "VOLUNTEER", _("volunteer")

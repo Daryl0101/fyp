@@ -10,4 +10,4 @@ class ProductSearchItemResponse(serializers.ModelSerializer):
 
 
 class ProductSearchResponse(PaginationResponse, serializers.Serializer):
-    products = ProductSearchItemResponse(many=True)
+    items = ProductSearchItemResponse(many=True)
