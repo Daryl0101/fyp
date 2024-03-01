@@ -1,16 +1,25 @@
 from rest_framework.authentication import TokenAuthentication
 from drf_spectacular.utils import extend_schema
+from app_backend.permissions import IsNGOManager
 from app_backend.serializers.authentication.request.authenticationRegisterRequest import (
     AuthenticationRegisterRequest,
 )
+from app_backend.serializers.authentication.request.userSearchRequest import (
+    UserSearchRequest,
+)
 from app_backend.serializers.authentication.response.authenticationProfileResponse import (
     AuthenticationProfileResponse,
+)
+from app_backend.serializers.authentication.response.userSearchResponse import (
+    UserSearchResponse,
 )
 from app_backend.services.authenticationServices import (
     processDisplayUserProfile,
     processLoginUser,
     processLogoutUser,
     processRegisterUser,
+    processRetrieveUserDetails,
+    processSearchUser,
 )
 from app_backend.utils import schemaWrapper
 from rest_framework.decorators import (
@@ -23,32 +32,32 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from app_backend.serializers.authentication.request.authenticationLoginRequest import (
     AuthenticationLoginRequest,
 )
-from app_backend.serializers.authentication.response.authenticationRegisterLoginResponse import (
-    AuthenticationRegisterLoginResponse,
+from app_backend.serializers.authentication.response.authenticationLoginResponse import (
+    AuthenticationLoginResponse,
 )
 from app_backend.decorators import response_handler
 
 
 @extend_schema(
     request=AuthenticationRegisterRequest,
-    responses={200: schemaWrapper(AuthenticationRegisterLoginResponse)},
+    responses={200: schemaWrapper()},
 )
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
-@permission_classes([AllowAny])
-@response_handler(responses=AuthenticationRegisterLoginResponse(allow_null=True))
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=serializers.BooleanField(allow_null=True))
 def authenticationRegister(request):
     return processRegisterUser(request)
 
 
 @extend_schema(
     request=AuthenticationLoginRequest,
-    responses={200: schemaWrapper(AuthenticationRegisterLoginResponse)},
+    responses={200: schemaWrapper(AuthenticationLoginResponse)},
 )
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([AllowAny])
-@response_handler(responses=AuthenticationRegisterLoginResponse(allow_null=True))
+@response_handler(responses=AuthenticationLoginResponse(allow_null=True))
 def authenticationLogin(request):
     return processLoginUser(request)
 
@@ -73,6 +82,26 @@ def authenticationLogout(request):
 @response_handler(responses=AuthenticationProfileResponse(allow_null=True))
 def authenticationDisplayProfile(request):
     return processDisplayUserProfile(request)
+
+
+@extend_schema(
+    parameters=[UserSearchRequest], responses={200: schemaWrapper(UserSearchResponse)}
+)
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=UserSearchResponse(allow_null=True))
+def authenticationSearchUser(request):
+    return processSearchUser(request)
+
+
+@extend_schema(responses={200: schemaWrapper(AuthenticationProfileResponse)})
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=AuthenticationProfileResponse(allow_null=True))
+def authenticationUserDetails(request, user_id):
+    return processRetrieveUserDetails(request, user_id)
 
 
 # class AuthenticationViews(viewsets.GenericViewSet):

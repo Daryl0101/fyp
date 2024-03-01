@@ -10,4 +10,4 @@ class FamilySearchItemResponse(serializers.ModelSerializer):
 
 
 class FamilySearchResponse(PaginationResponse, serializers.Serializer):
-    families = FamilySearchItemResponse(many=True)
+    items = FamilySearchItemResponse(many=True)

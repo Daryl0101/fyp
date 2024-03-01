@@ -9,7 +9,7 @@ from app_backend.models.master_data.family import Family
 class Person(BaseModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    gender = models.IntegerField(choices=Gender.choices)
+    gender = models.CharField(choices=Gender.choices)
     birthdate = models.DateField()
     height = models.DecimalField(max_digits=10, decimal_places=2)
     weight = models.DecimalField(max_digits=10, decimal_places=2)
