@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "app_backend.apps.AppBackendConfig",
     "app_frontend.apps.AppFrontendConfig",
+    "corsheaders",
 ]
 
 REST_FRAMEWORK = {
@@ -82,7 +83,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
 
 ROOT_URLCONF = "food_allocation.urls"
 

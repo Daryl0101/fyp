@@ -2,9 +2,12 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from django.db import models
+from app_backend.enums import Gender
+
+from app_backend.models.base.common_model import BaseModel
 
 
-class User(AbstractUser):
+class User(AbstractUser, BaseModel):
     id = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
@@ -20,5 +23,5 @@ class User(AbstractUser):
     profile_img_url = models.URLField(
         default=None, null=True, validators=[validators.URLValidator()]
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+    gender = models.CharField(choices=Gender.choices)
+    is_ngo_manager = models.BooleanField(default=False)

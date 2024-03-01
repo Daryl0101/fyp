@@ -8,5 +8,5 @@ class PaginationRequest(serializers.Serializer):
     page_size = serializers.IntegerField(default=10)
     sort_column = serializers.CharField(default="default")
     sort_order = serializers.ChoiceField(
-        choices=SortOrder.choices, default=SortOrder.ASCENDING
+        choices=SortOrder.choices, default=SortOrder.DESCENDING
     )
