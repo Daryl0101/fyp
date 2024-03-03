@@ -10,15 +10,23 @@ class Product(BaseModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=200, blank=True)
     image = models.URLField(
-        default=None, null=True, validators=[validators.URLValidator()]
+        default=None,
+        null=True,
+        # , validators=[validators.URLValidator()]
     )
     serving_size = models.DecimalField(
         max_digits=10,
         decimal_places=2,
     )
-    carbohydrate_calorie = models.DecimalField(max_digits=10, decimal_places=2)
-    protein_calorie = models.DecimalField(max_digits=10, decimal_places=2)
-    fat_calorie = models.DecimalField(max_digits=10, decimal_places=2)
+    calorie = models.DecimalField(max_digits=10, decimal_places=2)  # kcal
+    carbohydrate = models.DecimalField(max_digits=10, decimal_places=2)  # g
+    protein = models.DecimalField(max_digits=10, decimal_places=2)  # g
+    fat = models.DecimalField(max_digits=10, decimal_places=2)  # g
+    fiber = models.DecimalField(max_digits=10, decimal_places=2)  # g
+    sugar = models.DecimalField(max_digits=10, decimal_places=2)  # g
+    saturated_fat = models.DecimalField(max_digits=10, decimal_places=2)  # g
+    cholesterol = models.DecimalField(max_digits=10, decimal_places=2)  # mg
+    sodium = models.DecimalField(max_digits=10, decimal_places=2)  # mg
     is_halal = models.BooleanField(default=False)
     # total_qty = models.IntegerField(default=0)
     # available_qty = models.IntegerField(default=0)

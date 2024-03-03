@@ -63,15 +63,15 @@ def processSearchFoodCategories(request):
     # region Serialize response
     response_serializer = FoodCategorySearchResponse(
         data={
-            "food_categories": FoodCategorySearchItemResponse(
+            "items": FoodCategorySearchItemResponse(
                 page.object_list, many=True, allow_null=True
             ).data,
             "total_page": paginator.num_pages,
             "current_page": page.number,
             "next_page": page.next_page_number() if page.has_next() else None,
-            "previous_page": page.previous_page_number()
-            if page.has_previous()
-            else None,
+            "previous_page": (
+                page.previous_page_number() if page.has_previous() else None
+            ),
             "total_record": paginator.count,
             "current_record": page.object_list.count(),
         }
