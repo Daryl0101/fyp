@@ -10,4 +10,4 @@ class FoodCategorySearchItemResponse(serializers.ModelSerializer):
 
 
 class FoodCategorySearchResponse(PaginationResponse, serializers.Serializer):
-    food_categories = FoodCategorySearchItemResponse(many=True)
+    items = FoodCategorySearchItemResponse(many=True)

@@ -1,8 +1,8 @@
 from datetime import date
 from itertools import chain
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q
-from django.db.transaction import atomic
 from rest_framework import serializers
 from app_backend.enums import ActionType, ActivityLevel, Gender, HalalStatus, SortOrder
 from app_backend.models.master_data.family import Family
@@ -129,7 +129,7 @@ def processViewProduct(request, product_id):
     return response_serializer.initial_data
 
 
-@atomic
+@transaction.atomic
 def processCreateProduct(request):
     result = False
 
@@ -141,7 +141,7 @@ def processCreateProduct(request):
     )
 
     product = Product.objects.filter(
-        name_iexact=request_parsed.validated_data["name"]
+        name__iexact=request_parsed.validated_data["name"]
     ).first()
     if product is not None:
         raise serializers.ValidationError("Product already exists")
@@ -173,6 +173,7 @@ def processCreateProduct(request):
     return result
 
 
+@transaction.atomic
 def processUpdateProduct(request, product_id):
     result = False
 
@@ -330,7 +331,7 @@ def processViewFamily(request, family_id):
     return response_serializer.initial_data
 
 
-@atomic
+@transaction.atomic
 def processCreateFamily(request):
     result = False
 
@@ -395,7 +396,7 @@ def processCreateFamily(request):
     return result
 
 
-@atomic
+@transaction.atomic
 def processUpdateFamily(request, family_id):
     result = False
 

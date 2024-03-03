@@ -3,7 +3,9 @@ from rest_framework import serializers
 
 class ProductCreateUpdateRequest(serializers.Serializer):
     name = serializers.CharField(max_length=100)
-    description = serializers.CharField(max_length=255)
+    description = serializers.CharField(
+        max_length=255, allow_blank=True, required=False, default=""
+    )
     serving_size = serializers.DecimalField(max_digits=10, decimal_places=2)
     calorie = serializers.DecimalField(max_digits=10, decimal_places=2)  # kcal
     carbohydrate = serializers.DecimalField(max_digits=10, decimal_places=2)  # g

@@ -5,7 +5,7 @@ from app_backend.views import systemReferenceViews
 
 urlpatterns = [
     path(
-        "food_category",
+        "food-category",
         systemReferenceViews.foodCategoriesSearch,
         name="search-food-categories",
     ),

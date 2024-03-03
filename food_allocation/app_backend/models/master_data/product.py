@@ -10,7 +10,9 @@ class Product(BaseModel):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=200, blank=True)
     image = models.URLField(
-        default=None, null=True, validators=[validators.URLValidator()]
+        default=None,
+        null=True,
+        # , validators=[validators.URLValidator()]
     )
     serving_size = models.DecimalField(
         max_digits=10,
