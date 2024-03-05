@@ -200,6 +200,8 @@ def processSearchUser(request):
 
 
 def processRetrieveUserDetails(request, user_id: uuid):
+    if user_id <= 0:
+        raise serializers.ValidationError("User Id is required")
     user = User.objects.filter(is_active=True).filter(id=user_id).first()
     if user is None:
         raise serializers.ValidationError("User does not exist")
@@ -226,7 +228,8 @@ def processUpdateUser(request, user_id: uuid):
     request_parsed = AuthenticationRegisterUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
-    # Update user
+    if user_id <= 0:
+        raise serializers.ValidationError("User Id is required")
     user = User.objects.filter(is_active=True).filter(id=user_id).first()
     if user is None:
         raise serializers.ValidationError("User does not exist")
