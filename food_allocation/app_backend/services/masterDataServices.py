@@ -4,7 +4,14 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers
-from app_backend.enums import ActionType, ActivityLevel, Gender, HalalStatus, SortOrder
+from app_backend.enums import (
+    ActionType,
+    ActivityLevel,
+    Gender,
+    HalalStatus,
+    ItemNoPrefix,
+    SortOrder,
+)
 from app_backend.models.master_data.family import Family
 from app_backend.models.master_data.person import Person
 from app_backend.models.master_data.product import Product
@@ -41,7 +48,12 @@ from app_backend.serializers.master_data.response.productSearchResponse import (
     ProductSearchResponse,
 )
 from app_backend.services.systemReferenceServices import retrieveFoodCategoriesByIds
-from app_backend.utils import enumToDict, isBlank, setCreateUpdateProperty
+from app_backend.utils import (
+    enumToDict,
+    isBlank,
+    setCreateUpdateProperty,
+    generateItemNoFromId,
+)
 
 
 # region Products
@@ -52,7 +64,7 @@ def processSearchProducts(request):
     # endregion
 
     # region Filter
-    products = Product.objects.all()
+    products = Product.objects.filter(is_active=True)
 
     if not isBlank(request_parsed.validated_data["product_no"]):
         products = products.filter(
@@ -122,7 +134,7 @@ def processSearchProducts(request):
 def processViewProduct(request, product_id):
     if int(product_id) <= 0:
         raise serializers.ValidationError("Invalid Product ID")
-    product = Product.objects.filter(id=product_id).first()
+    product = Product.objects.filter(is_active=True).filter(id=product_id).first()
     if product is None:
         raise serializers.ValidationError("Invalid Product")
     response_serializer = ProductDetailResponse(data=product)
@@ -140,9 +152,11 @@ def processCreateProduct(request):
         ids=request_parsed.validated_data["food_categories"]
     )
 
-    product = Product.objects.filter(
-        name__iexact=request_parsed.validated_data["name"]
-    ).first()
+    product = (
+        Product.objects.filter(is_active=True)
+        .filter(name__iexact=request_parsed.validated_data["name"])
+        .first()
+    )
     if product is not None:
         raise serializers.ValidationError("Product already exists")
 
@@ -165,7 +179,7 @@ def processCreateProduct(request):
     product.save()
 
     product.food_categories.set(food_categories)
-    product.product_no = "P" + str(product.id).zfill(5)
+    product.product_no = generateItemNoFromId(ItemNoPrefix.PRODUCT, product.id)
     product.save()
 
     result = True
@@ -183,9 +197,22 @@ def processUpdateProduct(request, product_id):
     request_parsed = ProductCreateUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
-    product = Product.objects.select_for_update().filter(id=product_id).first()
+    product = (
+        Product.objects.filter(is_active=True)
+        .filter(id=product_id)
+        .select_for_update()
+        .first()
+    )
     if product is None:
         raise serializers.ValidationError("Invalid Product")
+
+    existing_products = (
+        Product.objects.filter(is_active=True)
+        .filter(name__iexact=request_parsed.validated_data["name"])
+        .exclude(id=product_id)
+    )
+    if existing_products.exists():
+        raise serializers.ValidationError("Product name already exists")
 
     food_categories = retrieveFoodCategoriesByIds(
         ids=request_parsed.validated_data["food_categories"]
@@ -213,15 +240,23 @@ def processUpdateProduct(request, product_id):
     return result
 
 
+@transaction.atomic
 def processDeleteProduct(request, product_id):
     result = False
 
     if product_id <= 0:
         raise serializers.ValidationError("Invalid Product ID")
-    product = Product.objects.filter(id=product_id).first()
+    product = (
+        Product.objects.filter(is_active=True)
+        .filter(id=product_id)
+        .select_for_update()
+        .first()
+    )
     if product is None:
         raise serializers.ValidationError("Invalid Product")
-    product.delete()
+    product.is_active = False
+    setCreateUpdateProperty(product, request.user, ActionType.UPDATE)
+    product.save()
 
     result = True
 
@@ -231,7 +266,9 @@ def processDeleteProduct(request, product_id):
 def retrieveProductsByNo(product_no: str, is_validation_required: bool):
     if isBlank(product_no):
         raise serializers.ValidationError("Invalid Product No")
-    products = Product.objects.filter(product_no__icontains=product_no)
+    products = Product.objects.filter(is_active=True).filter(
+        product_no__icontains=product_no
+    )
     if is_validation_required:
         if products is None or len(products) <= 0:
             raise serializers.ValidationError("Invalid Products")
@@ -249,7 +286,7 @@ def processSearchFamilies(request):
     # endregion
 
     # region Filter
-    families = Family.objects.all()
+    families = Family.objects.filter(is_active=True)
 
     if not isBlank(request_parsed.validated_data["family_no"]):
         families = families.filter(
@@ -358,13 +395,12 @@ def processCreateFamily(request):
         address=request_parsed.validated_data["address"],
         calorie_discount=request_parsed.validated_data["calorie_discount"],
         total_member=len(request_parsed.new_members()),
-        last_received_date=date.today(),  # TODO: Set last received date as today for now
     )
     setCreateUpdateProperty(family, request.user, ActionType.CREATE)
 
     family.save()
 
-    family.family_no = "F" + str(family.id).zfill(5)
+    family.family_no = generateItemNoFromId(ItemNoPrefix.FAMILY, family.id)
 
     family.food_restrictions.set(food_categories)
 
@@ -402,7 +438,12 @@ def processUpdateFamily(request, family_id):
 
     if family_id <= 0:
         raise serializers.ValidationError("Invalid Family ID")
-    family = Family.objects.select_for_update().filter(id=family_id).first()
+    family = (
+        Family.objects.filter(is_active=True)
+        .filter(id=family_id)
+        .select_for_update()
+        .first()
+    )
     if family is None:
         raise serializers.ValidationError("Invalid Family")
 
@@ -425,9 +466,9 @@ def processUpdateFamily(request, family_id):
     # Treat existing members
     existing_members_request = request_parsed.existing_members()
     existing_member_ids_request = set(x["id"] for x in existing_members_request)
-    existing_members = family.members.select_for_update().filter(
+    existing_members = family.members.filter(
         id__in=existing_member_ids_request
-    )
+    ).select_for_update()
 
     if len(existing_member_ids_request) != existing_members.count():
         raise serializers.ValidationError("Invalid member ID(s)")
@@ -500,16 +541,23 @@ def processUpdateFamily(request, family_id):
     return result
 
 
+@transaction.atomic
 def processDeleteFamily(request, family_id):
     result = False
 
     if family_id <= 0:
         raise serializers.ValidationError("Invalid Family ID")
-    family = Family.objects.filter(id=family_id).first()
+    family = (
+        Family.objects.filter(is_active=True)
+        .filter(id=family_id)
+        .select_for_update()
+        .first()
+    )
     if family is None:
         raise serializers.ValidationError("Invalid Family")
-    family.delete()
-
+    family.is_active = False
+    family.save()
+    setCreateUpdateProperty(family, request.user, ActionType.UPDATE)
     result = True
 
     return result

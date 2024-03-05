@@ -4,9 +4,9 @@ from app_backend.views import inventoryManagementViews
 
 
 urlpatterns = [
-    path(
-        "inventories/search",
-        inventoryManagementViews.inventorySearch,
-        name="search-inventories",
-    ),
+    # path(
+    #     "inventories/search",
+    #     inventoryManagementViews.inventorySearch,
+    #     name="search-inventories",
+    # ),
 ]

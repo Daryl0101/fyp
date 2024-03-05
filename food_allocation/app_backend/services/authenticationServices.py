@@ -36,13 +36,18 @@ def processRegisterUser(request):
     request_parsed = AuthenticationRegisterUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
-    existing_users = User.objects.filter(is_active=True).filter(
+    # Check if user already exists
+    # filter(is_active=True) is not used here because the filter must be inclusive to inactive users
+    # since the username and email are unique
+    existing_users = User.objects.filter(
         Q(username__iexact=request_parsed.validated_data["username"])
         | Q(email=request_parsed.validated_data["email"])
     )
 
-    if existing_users.count() > 0:
-        raise serializers.ValidationError("Try another username or email")
+    if existing_users.exists():
+        raise serializers.ValidationError(
+            "Username/Email has been taken. Try another username or email."
+        )
 
     # Create user
     user = User.objects.create_user(
@@ -54,8 +59,8 @@ def processRegisterUser(request):
         last_name=request_parsed.validated_data["last_name"].capitalize(),
         gender=request_parsed.validated_data["gender"],
         is_ngo_manager=request_parsed.validated_data["is_ngo_manager"],
-        created_by=request.user.id,
-        modified_by=request.user.id,
+        created_by=request.user,
+        modified_by=request.user,
     )
     # setCreateUpdateProperty(user, request.user, ActionType.CREATE)
     user.save()
@@ -138,7 +143,7 @@ def processSearchUser(request):
     # endregion
 
     # region Filter
-    users = User.objects.all().filter(is_active=True)
+    users = User.objects.filter(is_active=True)
 
     if not isBlank(request_parsed.validated_data["wildcard"]):
         users = users.filter(
@@ -222,6 +227,7 @@ def processRetrieveUserDetails(request, user_id: uuid):
     return response_serializer.initial_data
 
 
+@transaction.atomic
 def processUpdateUser(request, user_id: uuid):
     result = False
     # Check if request is valid
@@ -230,7 +236,12 @@ def processUpdateUser(request, user_id: uuid):
 
     if user_id <= 0:
         raise serializers.ValidationError("User Id is required")
-    user = User.objects.filter(is_active=True).filter(id=user_id).first()
+    user = (
+        User.objects.filter(is_active=True)
+        .filter(id=user_id)
+        .select_for_update()
+        .first()
+    )
     if user is None:
         raise serializers.ValidationError("User does not exist")
 
@@ -261,13 +272,20 @@ def processUpdateUser(request, user_id: uuid):
     return result
 
 
+@transaction.atomic
 def processDeleteUser(request, user_id: uuid):
     result = False
-    user = User.objects.filter(is_active=True).filter(id=user_id).first()
+    user = (
+        User.objects.filter(is_active=True)
+        .filter(id=user_id)
+        .select_for_update()
+        .first()
+    )
     if user is None:
         raise serializers.ValidationError("User does not exist")
 
     user.is_active = False
+    setCreateUpdateProperty(user, request.user, ActionType.UPDATE)
     user.save()
 
     result = True

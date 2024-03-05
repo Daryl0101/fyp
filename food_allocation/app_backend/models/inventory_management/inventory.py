@@ -11,11 +11,9 @@ class Inventory(BaseModel):
     storage = models.ForeignKey(
         Storage, on_delete=models.PROTECT, related_name="inventories"
     )  # To ensure all products are moved to another storage before deleting a storage
-    serving_size = models.DecimalField(default=1, decimal_places=2, max_digits=10)
-    carbohydrate_calorie = models.DecimalField(max_digits=10, decimal_places=2)
-    protein_calorie = models.DecimalField(max_digits=10, decimal_places=2)
-    fat_calorie = models.DecimalField(max_digits=10, decimal_places=2)
     expiration_date = models.DateField()
-    batch_no = models.CharField(max_length=50)
-    total_qty = models.IntegerField(default=1)
-    available_qty = models.IntegerField(default=0)
+    received_date = models.DateField()
+    total_qty = models.IntegerField()
+    available_qty = models.IntegerField()
+    num_of_serving = models.DecimalField(decimal_places=2, max_digits=10)
+    is_active = models.BooleanField(default=True)

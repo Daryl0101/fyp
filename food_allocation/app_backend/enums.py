@@ -34,3 +34,10 @@ class HalalStatus(models.IntegerChoices):
 class Role(models.TextChoices):
     MANAGER = "MANAGER", _("manager")
     VOLUNTEER = "VOLUNTEER", _("volunteer")
+
+
+class ItemNoPrefix(models.TextChoices):
+    FAMILY = "F", _("Family")
+    INVENTORY = "IV", _("Inventory")
+    PRODUCT = "P", _("Product")
+    STORAGE = "S", _("Storage")

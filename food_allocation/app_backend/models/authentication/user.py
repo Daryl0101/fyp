@@ -4,10 +4,8 @@ from django.core import validators
 from django.db import models
 from app_backend.enums import Gender
 
-from app_backend.models.base.common_model import BaseModel
 
-
-class User(AbstractUser, BaseModel):
+class User(AbstractUser):
     id = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
@@ -27,3 +25,23 @@ class User(AbstractUser, BaseModel):
     )
     gender = models.CharField(choices=Gender.choices)
     is_ngo_manager = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    # created_by and modified_by can be referenced to User model using foreign key because is_active is used in the User model
+    # these fields should not be blank or null
+    # blank or null is here because of the initial migration
+    # createsuperuser command will not work without these fields being blank or null
+    created_by = models.ForeignKey(
+        "User",
+        on_delete=models.PROTECT,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    modified_by = models.ForeignKey(
+        "User",
+        on_delete=models.PROTECT,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
