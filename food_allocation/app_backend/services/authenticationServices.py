@@ -36,6 +36,14 @@ def processRegisterUser(request):
     request_parsed = AuthenticationRegisterUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
+    existing_users = User.objects.filter(is_active=True).filter(
+        Q(username__iexact=request_parsed.validated_data["username"])
+        | Q(email=request_parsed.validated_data["email"])
+    )
+
+    if existing_users.count() > 0:
+        raise serializers.ValidationError("Try another username or email")
+
     # Create user
     user = User.objects.create_user(
         username=request_parsed.validated_data["username"],
@@ -222,6 +230,17 @@ def processUpdateUser(request, user_id: uuid):
     user = User.objects.filter(is_active=True).filter(id=user_id).first()
     if user is None:
         raise serializers.ValidationError("User does not exist")
+
+    existing_users = (
+        User.objects.filter(is_active=True)
+        .filter(
+            Q(username__iexact=request_parsed.validated_data["username"])
+            | Q(email=request_parsed.validated_data["email"])
+        )
+        .exclude(id=user_id)
+    )
+    if existing_users.count() > 0:
+        raise serializers.ValidationError("Try another username or email")
 
     user.username = request_parsed.validated_data["username"]
     user.password = request_parsed.validated_data["password"]
