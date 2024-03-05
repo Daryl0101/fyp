@@ -1,8 +1,8 @@
 from rest_framework.authentication import TokenAuthentication
 from drf_spectacular.utils import extend_schema
 from app_backend.permissions import IsNGOManager
-from app_backend.serializers.authentication.request.authenticationRegisterRequest import (
-    AuthenticationRegisterRequest,
+from app_backend.serializers.authentication.request.authenticationRegisterUpdateRequest import (
+    AuthenticationRegisterUpdateRequest,
 )
 from app_backend.serializers.authentication.request.userSearchRequest import (
     UserSearchRequest,
@@ -14,12 +14,14 @@ from app_backend.serializers.authentication.response.userSearchResponse import (
     UserSearchResponse,
 )
 from app_backend.services.authenticationServices import (
+    processDeleteUser,
     processDisplayUserProfile,
     processLoginUser,
     processLogoutUser,
     processRegisterUser,
     processRetrieveUserDetails,
     processSearchUser,
+    processUpdateUser,
 )
 from app_backend.utils import schemaWrapper
 from rest_framework.decorators import (
@@ -39,7 +41,7 @@ from app_backend.decorators import response_handler
 
 
 @extend_schema(
-    request=AuthenticationRegisterRequest,
+    request=AuthenticationRegisterUpdateRequest,
     responses={200: schemaWrapper()},
 )
 @api_view(["POST"])
@@ -102,6 +104,27 @@ def authenticationSearchUser(request):
 @response_handler(responses=AuthenticationProfileResponse(allow_null=True))
 def authenticationUserDetails(request, user_id):
     return processRetrieveUserDetails(request, user_id)
+
+
+@extend_schema(
+    request=AuthenticationRegisterUpdateRequest,
+    responses={200: schemaWrapper()},
+)
+@api_view(["PATCH"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=serializers.BooleanField(allow_null=True))
+def authenticationUpdateUser(request, user_id):
+    return processUpdateUser(request, user_id)
+
+
+@extend_schema(responses={200: schemaWrapper()})
+@api_view(["DELETE"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=serializers.BooleanField(allow_null=True))
+def authenticationDeleteUser(request, user_id):
+    return processDeleteUser(request, user_id)
 
 
 # class AuthenticationViews(viewsets.GenericViewSet):

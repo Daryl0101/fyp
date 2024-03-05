@@ -12,4 +12,14 @@ urlpatterns = [
         authenticationViews.authenticationUserDetails,
         name="details",
     ),
+    path(
+        "update/<uuid:user_id>",
+        authenticationViews.authenticationUpdateUser,
+        name="update",
+    ),
+    path(
+        "delete/<uuid:user_id>",
+        authenticationViews.authenticationDeleteUser,
+        name="delete",
+    ),
 ]

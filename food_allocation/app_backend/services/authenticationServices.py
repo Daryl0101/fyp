@@ -10,8 +10,8 @@ from app_backend.models.authentication.user import User
 from app_backend.serializers.authentication.request.authenticationLoginRequest import (
     AuthenticationLoginRequest,
 )
-from app_backend.serializers.authentication.request.authenticationRegisterRequest import (
-    AuthenticationRegisterRequest,
+from app_backend.serializers.authentication.request.authenticationRegisterUpdateRequest import (
+    AuthenticationRegisterUpdateRequest,
 )
 from app_backend.serializers.authentication.request.userSearchRequest import (
     UserSearchRequest,
@@ -33,7 +33,7 @@ from app_backend.utils import isBlank, setCreateUpdateProperty
 def processRegisterUser(request):
     result = False
     # Check if request is valid
-    request_parsed = AuthenticationRegisterRequest(data=request.data)
+    request_parsed = AuthenticationRegisterUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
     # Create user
@@ -130,7 +130,7 @@ def processSearchUser(request):
     # endregion
 
     # region Filter
-    users = User.objects.all()
+    users = User.objects.all().filter(is_active=True)
 
     if not isBlank(request_parsed.validated_data["wildcard"]):
         users = users.filter(
@@ -192,7 +192,7 @@ def processSearchUser(request):
 
 
 def processRetrieveUserDetails(request, user_id: uuid):
-    user = User.objects.filter(id=user_id).first()
+    user = User.objects.filter(is_active=True).filter(id=user_id).first()
     if user is None:
         raise serializers.ValidationError("User does not exist")
 
@@ -210,3 +210,43 @@ def processRetrieveUserDetails(request, user_id: uuid):
     )
 
     return response_serializer.initial_data
+
+
+def processUpdateUser(request, user_id: uuid):
+    result = False
+    # Check if request is valid
+    request_parsed = AuthenticationRegisterUpdateRequest(data=request.data)
+    request_parsed.is_valid(raise_exception=True)
+
+    # Update user
+    user = User.objects.filter(is_active=True).filter(id=user_id).first()
+    if user is None:
+        raise serializers.ValidationError("User does not exist")
+
+    user.username = request_parsed.validated_data["username"]
+    user.password = request_parsed.validated_data["password"]
+    user.email = request_parsed.validated_data["email"]
+    user.phone_number = request_parsed.validated_data["phone_number"]
+    user.first_name = request_parsed.validated_data["first_name"].capitalize()
+    user.last_name = request_parsed.validated_data["last_name"].capitalize()
+    user.is_ngo_manager = request_parsed.validated_data["is_ngo_manager"]
+    user.gender = request_parsed.validated_data["gender"]
+    setCreateUpdateProperty(user, request.user, ActionType.UPDATE)
+
+    user.save()
+
+    result = True
+    return result
+
+
+def processDeleteUser(request, user_id: uuid):
+    result = False
+    user = User.objects.filter(is_active=True).filter(id=user_id).first()
+    if user is None:
+        raise serializers.ValidationError("User does not exist")
+
+    user.is_active = False
+    user.save()
+
+    result = True
+    return result
