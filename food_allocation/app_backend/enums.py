@@ -38,6 +38,14 @@ class Role(models.TextChoices):
 
 class ItemNoPrefix(models.TextChoices):
     FAMILY = "F", _("Family")
-    INVENTORY = "IV", _("Inventory")
+    INVENTORY = "INV", _("Inventory")
     PRODUCT = "P", _("Product")
     STORAGE = "S", _("Storage")
+
+
+class InventoryMovement(models.TextChoices):
+    INBOUND = "INBOUND", _("Inbound")
+    OUTBOUND = "OUTBOUND", _("Outbound")
+    ADJUSTMENT = "ADJUSTMENT", _("Adjustment")
+    # EXPIRED = "EXPIRED", _("Expired")
+    # OTHER = "OTHER", _("Other")

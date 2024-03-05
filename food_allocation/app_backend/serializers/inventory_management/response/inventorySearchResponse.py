@@ -7,7 +7,7 @@ from app_backend.serializers.base.response.paginationResponse import PaginationR
 class InventorySearchItemResponse(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name")
     storage_name = serializers.CharField(source="storage.name")
-    received_date = serializers.DateTimeField(source="created_at")
+    # received_date = serializers.DateTimeField(source="received_date")
 
     class Meta:
         model = Inventory
@@ -16,7 +16,6 @@ class InventorySearchItemResponse(serializers.ModelSerializer):
             "product_name",
             "storage_name",
             "expiration_date",
-            "batch_no",
             "received_date",
             "total_qty",
             "available_qty",

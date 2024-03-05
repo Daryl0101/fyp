@@ -5,8 +5,13 @@ from app_backend.views import systemReferenceViews
 
 urlpatterns = [
     path(
-        "food-category",
+        "food-categories/search",
         systemReferenceViews.foodCategoriesSearch,
         name="search-food-categories",
+    ),
+    path(
+        "storages/search",
+        systemReferenceViews.storagesSearch,
+        name="search-storages",
     ),
 ]

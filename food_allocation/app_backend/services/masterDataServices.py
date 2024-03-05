@@ -263,6 +263,15 @@ def processDeleteProduct(request, product_id):
     return result
 
 
+def retrieveActiveProductById(id: int, is_validation_required: bool):
+    if id <= 0:
+        raise serializers.ValidationError("Invalid Product ID")
+    product = Product.objects.filter(is_active=True).filter(id=id).first()
+    if is_validation_required and product is None:
+        raise serializers.ValidationError("Invalid Product")
+    return product
+
+
 def retrieveProductsByNo(product_no: str, is_validation_required: bool):
     if isBlank(product_no):
         raise serializers.ValidationError("Invalid Product No")

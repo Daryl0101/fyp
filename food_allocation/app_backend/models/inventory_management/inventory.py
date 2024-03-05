@@ -5,6 +5,7 @@ from app_backend.models.system_reference.storage import Storage
 
 
 class Inventory(BaseModel):
+    inventory_no = models.CharField(max_length=50, unique=True)
     product = models.ForeignKey(
         Product, on_delete=models.PROTECT, related_name="inventories"
     )  # To ensure inventory does not contain the product before deleting a product
