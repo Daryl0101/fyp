@@ -1,11 +1,7 @@
 from rest_framework import serializers
 
 
-class ProductCreateUpdateRequest(serializers.Serializer):
-    name = serializers.CharField(max_length=100)
-    description = serializers.CharField(
-        max_length=255, allow_blank=True, required=False, default=""
-    )
+class ProductUpdateRequest(serializers.Serializer):
     serving_size = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
     calorie = serializers.DecimalField(
         max_digits=10, decimal_places=2, default=0
@@ -24,8 +20,6 @@ class ProductCreateUpdateRequest(serializers.Serializer):
         max_digits=10, decimal_places=2, default=0
     )  # mg
     sodium = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)  # mg
-    is_halal = serializers.BooleanField()
-    food_categories = serializers.ListField(child=serializers.IntegerField())
 
     def validate(self, data):
         if data["serving_size"] <= 0:
@@ -52,10 +46,3 @@ class ProductCreateUpdateRequest(serializers.Serializer):
             raise serializers.ValidationError(
                 "Food has no nutritional content. Please check your input."
             )
-        if len(data["food_categories"]) <= 0:
-            raise serializers.ValidationError("At least 1 food category is required")
-        if list(filter(lambda x: x <= 0, data["food_categories"])):
-            raise serializers.ValidationError("Invalid food category id(s)")
-        if len(set(data["food_categories"])) != len(data["food_categories"]):
-            raise serializers.ValidationError("Duplicate food category ids detected")
-        return data

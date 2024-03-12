@@ -14,6 +14,9 @@ from app_backend.serializers.system_reference.response.foodCategorySearchRespons
     FoodCategorySearchItemResponse,
     FoodCategorySearchResponse,
 )
+from app_backend.serializers.system_reference.response.storageDetailResponse import (
+    StorageDetailResponse,
+)
 from app_backend.serializers.system_reference.response.storageSearchResponse import (
     StorageSearchItemResponse,
     StorageSearchResponse,
@@ -100,6 +103,15 @@ def processSearchStorages(request):
     # region Filter
     storages = Storage.objects.filter(is_active=True)
 
+    if (
+        request_parsed.validated_data["exclude_product_id"] is not None
+        and request_parsed.validated_data["exclude_product_id"] > 0
+    ):
+        storages = storages.exclude(
+            inventories__product_id=request_parsed.validated_data["exclude_product_id"],
+            inventories__is_active=True,
+        )
+
     if not isBlank(request_parsed.validated_data["storage_no"]):
         storages = storages.filter(
             storage_no__icontains=request_parsed.validated_data["storage_no"]
@@ -154,6 +166,13 @@ def processSearchStorages(request):
         }
     )
     # endregion
+    return response_serializer.initial_data
+
+
+def processViewStorage(request, storage_id):
+    inventory = retrieveActiveStorageById(id=storage_id, is_validation_required=True)
+    response_serializer = StorageDetailResponse(data=inventory)
+
     return response_serializer.initial_data
 
 

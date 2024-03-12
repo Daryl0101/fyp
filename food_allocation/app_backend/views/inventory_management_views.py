@@ -17,12 +17,14 @@ from app_backend.serializers.inventory_management.response.inventoryDetailRespon
 from app_backend.serializers.inventory_management.response.inventorySearchResponse import (
     InventorySearchResponse,
 )
-from app_backend.services.inventoryManagementServices import (
+from app_backend.services.inventory_management_services import (
     processAdjustInventory,
     processDeleteInventory,
-    processInboundInventory,
     processSearchInventories,
     processViewInventory,
+)
+from app_backend.services_aggregation.inventory_management_services_aggregation import (
+    processInboundInventory,
 )
 from app_backend.utils import schemaWrapper
 from rest_framework.decorators import (
@@ -81,7 +83,7 @@ def inventoryAdjust(request, inventory_id):
 
 
 @extend_schema(
-    request=InventoryAdjustRequest,  # pass 0 to the "qty" field from FE
+    parameters=[InventoryAdjustRequest],  # pass 0 to the "qty" field from FE
     responses={200: schemaWrapper()},
 )
 @api_view(["DELETE"])

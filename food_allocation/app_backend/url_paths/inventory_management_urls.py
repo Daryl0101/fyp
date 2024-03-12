@@ -1,32 +1,32 @@
 from django.urls import path
 
-from app_backend.views import inventoryManagementViews
+from app_backend.views import inventory_management_views
 
 
 urlpatterns = [
     path(
         "inventories/search",
-        inventoryManagementViews.inventorySearch,
+        inventory_management_views.inventorySearch,
         name="search-inventories",
     ),
     path(
         "inventories/<int:inventory_id>",
-        inventoryManagementViews.inventoryDetails,
+        inventory_management_views.inventoryDetails,
         name="view-inventory",
     ),
     path(
         "inventories/inbound",
-        inventoryManagementViews.inventoryInbound,
+        inventory_management_views.inventoryInbound,
         name="inbound-inventory",
     ),
     path(
         "inventories/<int:inventory_id>/adjust",
-        inventoryManagementViews.inventoryAdjust,
+        inventory_management_views.inventoryAdjust,
         name="adjust-inventory",
     ),
     path(
         "inventories/<int:inventory_id>/delete",
-        inventoryManagementViews.inventoryDelete,
+        inventory_management_views.inventoryDelete,
         name="delete-inventory",
     ),
 ]

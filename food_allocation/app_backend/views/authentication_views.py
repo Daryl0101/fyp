@@ -13,7 +13,7 @@ from app_backend.serializers.authentication.response.authenticationProfileRespon
 from app_backend.serializers.authentication.response.userSearchResponse import (
     UserSearchResponse,
 )
-from app_backend.services.authenticationServices import (
+from app_backend.services.authentication_services import (
     processDeleteUser,
     processDisplayUserProfile,
     processLoginUser,

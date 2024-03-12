@@ -53,7 +53,6 @@ def baseResponseSerializerGenerator(
                 if isinstance(errors.detail, serializers.ReturnDict) or isinstance(
                     errors.detail, dict
                 ):
-                    print(errors.detail)
                     for field_name, field_errors in errors.detail.items():
                         for field_error in field_errors:
                             error_message = f"{field_name}: {field_error}"
@@ -186,7 +185,7 @@ def enumToDict(model: type[models.Choices]):
     """
     Convert Django Enum to Dict
     """
-    choices: list(dict(str | int, str)) = []
+    choices: list[dict[str | int, str]] = []
     for id, name in model.choices:
         choices.append({"id": id, "name": name})
     return choices

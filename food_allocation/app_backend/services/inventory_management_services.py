@@ -1,3 +1,11 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from app_backend.models.master_data.product import Product
+    from app_backend.models.system_reference.storage import Storage
+    from app_backend.models.authentication.user import User
 from django.core.paginator import Paginator
 from django.db import transaction
 from rest_framework import serializers
@@ -26,10 +34,6 @@ from app_backend.serializers.inventory_management.response.inventorySearchRespon
     InventorySearchItemResponse,
     InventorySearchResponse,
 )
-from app_backend.services.masterDataServices import (
-    retrieveActiveProductById,
-)
-from app_backend.services.systemReferenceServices import retrieveActiveStorageById
 from app_backend.utils import generateItemNoFromId, isBlank, setCreateUpdateProperty
 
 
@@ -146,45 +150,8 @@ def processViewInventory(request, inventory_id: int):
     inventory = Inventory.objects.filter(is_active=True, id=inventory_id).first()
     if inventory is None:
         raise serializers.ValidationError("Invalid Inventory")
-    response_serializer = InventoryDetailResponse(inventory)
+    response_serializer = InventoryDetailResponse(data=inventory)
     return response_serializer.initial_data
-
-
-# Inbound
-@transaction.atomic
-def processInboundInventory(request):
-    result = False
-
-    request_parsed = InventoryInboundRequest(data=request.data)
-    request_parsed.is_valid(raise_exception=True)
-
-    product = retrieveActiveProductById(
-        request_parsed.validated_data["product_id"], True
-    )
-    storage = retrieveActiveStorageById(
-        request_parsed.validated_data["storage_id"], True
-    )
-
-    inventory = Inventory(
-        product=product,
-        storage=storage,
-        expiration_date=request_parsed.validated_data["expiration_date"],
-        received_date=request_parsed.validated_data["received_date"],
-        total_qty=request_parsed.validated_data["total_qty"],
-        available_qty=request_parsed.validated_data["total_qty"],
-        num_of_serving=request_parsed.validated_data["num_of_serving"],
-    )
-    setCreateUpdateProperty(inventory, request.user, ActionType.CREATE)
-    inventory.save()
-
-    inventory.inventory_no = generateItemNoFromId(ItemNoPrefix.INVENTORY, inventory.id)
-    inventory.save()
-
-    createInventoryHistory(
-        inventory, request.user, 0, inventory.total_qty, InventoryMovement.INBOUND, ""
-    )
-    result = True
-    return result
 
 
 # Adjustment
@@ -195,9 +162,6 @@ def processAdjustInventory(request, inventory_id: int):
     request_parsed = InventoryAdjustRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
 
-    if request_parsed.validated_data["qty"] <= 0:
-        raise serializers.ValidationError("Quantity must be greater than 0")
-
     if inventory_id <= 0:
         raise serializers.ValidationError("Invalid Inventory ID")
     inventory = (
@@ -207,15 +171,19 @@ def processAdjustInventory(request, inventory_id: int):
     )
     if inventory is None:
         raise serializers.ValidationError("Invalid Inventory")
-    if inventory.available_qty == 0:
-        raise serializers.ValidationError("Inventory has no available quantity")
+    # if inventory.available_qty == 0:
+    #     raise serializers.ValidationError("Inventory has no available quantity")
 
-    if request_parsed.validated_data["qty"] > inventory.available_qty:
-        raise serializers.ValidationError("Quantity must not exceed available quantity")
+    if request_parsed.validated_data[
+        "qty"
+    ] == inventory.total_qty or request_parsed.validated_data["qty"] < (
+        inventory.total_qty - inventory.available_qty
+    ):
+        raise serializers.ValidationError("Invalid Quantity")
 
     before = inventory.total_qty
-    inventory.available_qty -= request_parsed.validated_data["qty"]
-    inventory.total_qty -= request_parsed.validated_data["qty"]
+    inventory.total_qty = request_parsed.validated_data["qty"]
+    inventory.available_qty = inventory.available_qty - (before - inventory.total_qty)
 
     if inventory.total_qty == 0:
         inventory.is_active = False
@@ -240,7 +208,7 @@ def processAdjustInventory(request, inventory_id: int):
 def processDeleteInventory(request, inventory_id: int):
     result = False
 
-    request_parsed = InventoryAdjustRequest(data=request.data)
+    request_parsed = InventoryAdjustRequest(data=request.query_params)
     request_parsed.is_valid(raise_exception=True)
 
     if inventory_id <= 0:
@@ -285,10 +253,38 @@ def processDeleteInventory(request, inventory_id: int):
 # endregion
 
 
+def inboundInventoryFromProductStorageAndInventoryInboundRequest(
+    product: Product,
+    storage: Storage,
+    request_parsed: InventoryInboundRequest,
+    user: User,
+) -> Inventory:
+    inventory = Inventory(
+        product=product,
+        storage=storage,
+        expiration_date=request_parsed.validated_data["expiration_date"],
+        received_date=request_parsed.validated_data["received_date"],
+        total_qty=request_parsed.validated_data["total_qty"],
+        available_qty=request_parsed.validated_data["total_qty"],
+        num_of_serving=request_parsed.validated_data["num_of_serving"],
+    )
+    setCreateUpdateProperty(inventory, user, ActionType.CREATE)
+    inventory.save()
+
+    inventory.inventory_no = generateItemNoFromId(ItemNoPrefix.INVENTORY, inventory.id)
+    inventory.save()
+
+    createInventoryHistory(
+        inventory, user, 0, inventory.total_qty, InventoryMovement.INBOUND, ""
+    )
+
+    return inventory
+
+
 # parent function calling this must have @transaction.atomic
 def createInventoryHistory(
     inventory: Inventory,
-    user,
+    user: User,
     before: int,
     after: int,
     movement: InventoryMovement,
@@ -304,3 +300,29 @@ def createInventoryHistory(
     )
     setCreateUpdateProperty(inventory_history, user, ActionType.CREATE)
     inventory_history.save()
+
+
+def retrieveInventoriesByProduct(
+    product: Product, is_validation_required: bool
+) -> list[Inventory]:
+    if product is None:
+        raise serializers.ValidationError("Invalid Product")
+    inventories = Inventory.objects.filter(is_active=True, product=product)
+    if is_validation_required and (inventories is None or len(inventories) <= 0):
+        raise serializers.ValidationError("Invalid Inventories")
+    return inventories
+
+
+def retrieveInventoriesByProductAndStorage(
+    product: Product, storage: Storage, is_validation_required: bool
+) -> list[Inventory]:
+    if product is None:
+        raise serializers.ValidationError("Invalid Product")
+    if storage is None:
+        raise serializers.ValidationError("Invalid Storage")
+    inventories = Inventory.objects.filter(
+        is_active=True, product=product, storage=storage
+    )
+    if is_validation_required and (inventories is None or len(inventories) <= 0):
+        raise serializers.ValidationError("Invalid Inventories")
+    return inventories

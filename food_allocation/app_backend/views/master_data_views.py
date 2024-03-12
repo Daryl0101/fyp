@@ -14,6 +14,9 @@ from app_backend.serializers.master_data.request.productCreateUpdateRequest impo
 from app_backend.serializers.master_data.request.productSearchRequest import (
     ProductSearchRequest,
 )
+from app_backend.serializers.master_data.request.productUpdateRequest import (
+    ProductUpdateRequest,
+)
 from app_backend.serializers.master_data.response.activityLevelDropdownResponse import (
     ActivityLevelDropdownResponse,
 )
@@ -32,7 +35,7 @@ from app_backend.serializers.master_data.response.productDetailResponse import (
 from app_backend.serializers.master_data.response.productSearchResponse import (
     ProductSearchResponse,
 )
-from app_backend.services.masterDataServices import (
+from app_backend.services.master_data_services import (
     processCreateFamily,
     processCreateProduct,
     processDeleteFamily,
@@ -43,6 +46,7 @@ from app_backend.services.masterDataServices import (
     processSearchProducts,
     processUpdateFamily,
     processUpdateProduct,
+    processUpdateProductNutritionalInformation,
     processViewFamily,
     processViewProduct,
 )
@@ -94,6 +98,7 @@ def productCreate(request):
 @extend_schema(
     request=ProductCreateUpdateRequest,
     responses={200: schemaWrapper()},
+    deprecated=True,
 )
 @api_view(["PATCH"])
 @authentication_classes([TokenAuthentication])
@@ -101,6 +106,18 @@ def productCreate(request):
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def productUpdate(request, product_id):
     return processUpdateProduct(request, product_id)
+
+
+@extend_schema(
+    request=ProductUpdateRequest,
+    responses={200: schemaWrapper()},
+)
+@api_view(["PATCH"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@response_handler(responses=serializers.BooleanField(allow_null=True))
+def productUpdateNutritionalInformation(request, product_id):
+    return processUpdateProductNutritionalInformation(request, product_id)
 
 
 @extend_schema(

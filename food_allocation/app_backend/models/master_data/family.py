@@ -1,8 +1,6 @@
-from email.policy import default
 from django.db import models
 
 from app_backend.models.base.common_model import BaseModel
-from app_backend.models.system_reference.food_category import FoodCategory
 
 
 class Family(BaseModel):
@@ -18,7 +16,7 @@ class Family(BaseModel):
     total_member = models.IntegerField(default=0)
     calorie_discount = models.DecimalField(max_digits=10, decimal_places=2)
     food_restrictions = models.ManyToManyField(
-        FoodCategory,
+        "FoodCategory",
         through="FoodRestriction",
         related_name="families",
     )

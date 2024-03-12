@@ -1,1 +1,1 @@
-from . import authenticationViews, masterDataViews
+from . import authentication_views, master_data_views

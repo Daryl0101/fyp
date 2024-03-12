@@ -17,11 +17,17 @@ def response_handler(responses: Type[serializers.Serializer | dict]):
                 result = func(request, *args, **kwargs)
 
             except serializers.ValidationError as e:
+                # except Exception as e:
                 return Response(
                     baseResponseSerializerGenerator(
                         model=responses,
                         isInstance=True,
-                        errors=e,
+                        errors=(
+                            # [detail for detail in e.detail]
+                            # if type(e.detail) is not serializers.ErrorDetail
+                            # else e
+                            e
+                        ),
                     ).data,
                     status=400,
                 )

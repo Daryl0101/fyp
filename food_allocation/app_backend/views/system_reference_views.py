@@ -17,12 +17,16 @@ from app_backend.serializers.system_reference.request.storageSearchRequest impor
 from app_backend.serializers.system_reference.response.foodCategorySearchResponse import (
     FoodCategorySearchResponse,
 )
+from app_backend.serializers.system_reference.response.storageDetailResponse import (
+    StorageDetailResponse,
+)
 from app_backend.serializers.system_reference.response.storageSearchResponse import (
     StorageSearchResponse,
 )
-from app_backend.services.systemReferenceServices import (
+from app_backend.services.system_reference_services import (
     processSearchFoodCategories,
     processSearchStorages,
+    processViewStorage,
 )
 from app_backend.utils import schemaWrapper
 
@@ -49,3 +53,14 @@ def foodCategoriesSearch(request):
 @response_handler(responses=StorageSearchResponse(allow_null=True))
 def storagesSearch(request):
     return processSearchStorages(request)
+
+
+@extend_schema(
+    responses={200: schemaWrapper(StorageDetailResponse)},
+)
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@response_handler(responses=StorageDetailResponse(allow_null=True))
+def storageDetails(request, storage_id):
+    return processViewStorage(request, storage_id)

@@ -1,5 +1,14 @@
+# from typing import TYPE_CHECKING
+
+
+# if TYPE_CHECKING:
+from app_backend.serializers.master_data.request.productUpdateRequest import (
+    ProductUpdateRequest,
+)
+from app_backend.services.inventory_management_services import (
+    retrieveInventoriesByProduct,
+)
 from datetime import date
-from itertools import chain
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
@@ -47,7 +56,8 @@ from app_backend.serializers.master_data.response.productSearchResponse import (
     ProductSearchItemResponse,
     ProductSearchResponse,
 )
-from app_backend.services.systemReferenceServices import retrieveFoodCategoriesByIds
+
+from app_backend.services.system_reference_services import retrieveFoodCategoriesByIds
 from app_backend.utils import (
     enumToDict,
     isBlank,
@@ -241,6 +251,43 @@ def processUpdateProduct(request, product_id):
 
 
 @transaction.atomic
+def processUpdateProductNutritionalInformation(request, product_id: int):
+    result = False
+
+    if product_id <= 0:
+        raise serializers.ValidationError("Invalid Product ID")
+
+    request_parsed = ProductUpdateRequest(data=request.data)
+    request_parsed.is_valid(raise_exception=True)
+
+    product = (
+        Product.objects.filter(is_active=True)
+        .filter(id=product_id)
+        .select_for_update()
+        .first()
+    )
+    if product is None:
+        raise serializers.ValidationError("Invalid Product")
+
+    product.serving_size = request_parsed.validated_data["serving_size"]
+    product.calorie = request_parsed.validated_data["calorie"]
+    product.carbohydrate = request_parsed.validated_data["carbohydrate"]
+    product.protein = request_parsed.validated_data["protein"]
+    product.fat = request_parsed.validated_data["fat"]
+    product.fiber = request_parsed.validated_data["fiber"]
+    product.sugar = request_parsed.validated_data["sugar"]
+    product.saturated_fat = request_parsed.validated_data["saturated_fat"]
+    product.cholesterol = request_parsed.validated_data["cholesterol"]
+    product.sodium = request_parsed.validated_data["sodium"]
+    setCreateUpdateProperty(product, request.user, ActionType.UPDATE)
+    product.save()
+
+    result = True
+
+    return result
+
+
+@transaction.atomic
 def processDeleteProduct(request, product_id):
     result = False
 
@@ -254,6 +301,9 @@ def processDeleteProduct(request, product_id):
     )
     if product is None:
         raise serializers.ValidationError("Invalid Product")
+    inventories = retrieveInventoriesByProduct(product, False)
+    if inventories is not None and len(inventories) > 0:
+        raise serializers.ValidationError("Product is being used in inventory")
     product.is_active = False
     setCreateUpdateProperty(product, request.user, ActionType.UPDATE)
     product.save()
@@ -369,7 +419,7 @@ def processSearchFamilies(request):
 def processViewFamily(request, family_id):
     if family_id <= 0:
         raise serializers.ValidationError("Invalid Family ID")
-    family = Family.objects.filter(id=family_id).first()
+    family = Family.objects.filter(id=family_id, is_active=True).first()
     if family is None:
         raise serializers.ValidationError("Invalid Family")
     response_serializer = FamilyDetailResponse(data=family)

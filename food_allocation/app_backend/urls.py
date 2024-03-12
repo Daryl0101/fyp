@@ -7,12 +7,12 @@ from drf_spectacular.views import (
 
 # Add new modules here
 sectionpatterns = [
-    path("authentication/", include("app_backend.url_paths.authenticationUrls")),
-    path("master-data/", include("app_backend.url_paths.masterDataUrls")),
-    path("system-reference/", include("app_backend.url_paths.systemReferenceUrls")),
+    path("authentication/", include("app_backend.url_paths.authentication_urls")),
+    path("master-data/", include("app_backend.url_paths.master_data_urls")),
+    path("system-reference/", include("app_backend.url_paths.system_reference_urls")),
     path(
         "inventory-management/",
-        include("app_backend.url_paths.inventoryManagementUrls"),
+        include("app_backend.url_paths.inventory_management_urls"),
     ),
 ]
 

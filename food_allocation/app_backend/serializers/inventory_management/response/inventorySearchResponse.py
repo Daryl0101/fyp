@@ -2,19 +2,25 @@ from rest_framework import serializers
 from app_backend.models.inventory_management.inventory import Inventory
 
 from app_backend.serializers.base.response.paginationResponse import PaginationResponse
+from app_backend.serializers.master_data.response.productSearchResponse import (
+    ProductSearchItemResponse,
+)
+from app_backend.serializers.system_reference.response.storageSearchResponse import (
+    StorageSearchItemResponse,
+)
 
 
 class InventorySearchItemResponse(serializers.ModelSerializer):
-    product_name = serializers.CharField(source="product.name")
-    storage_name = serializers.CharField(source="storage.name")
-    # received_date = serializers.DateTimeField(source="received_date")
+    product = ProductSearchItemResponse()
+    storage = StorageSearchItemResponse()
 
     class Meta:
         model = Inventory
         fields = [
             "id",
-            "product_name",
-            "storage_name",
+            "inventory_no",
+            "product",
+            "storage",
             "expiration_date",
             "received_date",
             "total_qty",

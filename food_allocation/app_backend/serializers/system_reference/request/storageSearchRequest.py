@@ -14,3 +14,6 @@ class StorageSearchRequest(PaginationRequest, serializers.Serializer):
     halal_status = serializers.ChoiceField(
         choices=HalalStatus.choices, default=HalalStatus.ALL
     )
+    exclude_product_id = serializers.IntegerField(
+        allow_null=True, required=False, default=None
+    )
