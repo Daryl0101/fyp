@@ -6,7 +6,7 @@ from app_backend.models.base.common_model import BaseModel
 class Family(BaseModel):
     family_no = models.CharField(max_length=50, unique=True)
     name = models.CharField(
-        max_length=50
+        max_length=100
     )  # This is not unique, any family can have the same name, just identify them using the family_no
     is_halal = models.BooleanField(default=False)
     household_income = models.DecimalField(max_digits=10, decimal_places=2)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import date
 from typing import TYPE_CHECKING
 
 
@@ -101,6 +102,11 @@ def processSearchInventories(request):
         inventories = inventories.filter(product__is_halal=True)
     elif request_parsed.validated_data["halal_status"] == HalalStatus.NON_HALAL:
         inventories = inventories.filter(product__is_halal=False)
+
+    if request_parsed.validated_data["allowed_for_allocation_only"]:
+        inventories = inventories.filter(
+            available_qty__gt=0, expiration_date__gt=date.today()
+        )
     # endregion
 
     # region Sort
@@ -324,5 +330,24 @@ def retrieveInventoriesByProductAndStorage(
         is_active=True, product=product, storage=storage
     )
     if is_validation_required and (inventories is None or len(inventories) <= 0):
+        raise serializers.ValidationError("Invalid Inventories")
+    return inventories
+
+
+def retrieveInventoriesByIds(
+    inventory_ids: list[int], is_validation_required: bool
+) -> list[Inventory]:
+    if (
+        len(inventory_ids) <= 0
+        or len(set(inventory_ids)) != len(inventory_ids)
+        or any(id <= 0 for id in inventory_ids)
+    ):
+        raise serializers.ValidationError("Invalid Inventory IDs")
+    inventories = Inventory.objects.filter(is_active=True, id__in=set(inventory_ids))
+    if is_validation_required and (
+        inventories is None
+        or len(inventories) <= 0
+        or len(inventories) != len(set(inventory_ids))
+    ):
         raise serializers.ValidationError("Invalid Inventories")
     return inventories

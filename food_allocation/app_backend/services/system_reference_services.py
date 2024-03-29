@@ -66,7 +66,8 @@ def processSearchFoodCategories(request):
     # region Pagination
     paginator = Paginator(
         object_list=food_categories,
-        per_page=request_parsed.validated_data["page_size"],
+        # per_page=request_parsed.validated_data["page_size"],
+        per_page=100,
     )
     page = paginator.get_page(request_parsed.validated_data["page_no"])
     # endregion

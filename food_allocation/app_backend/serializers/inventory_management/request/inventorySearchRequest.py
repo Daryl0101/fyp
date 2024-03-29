@@ -42,6 +42,9 @@ class InventorySearchRequest(PaginationRequest, serializers.Serializer):
     halal_status = serializers.ChoiceField(
         choices=HalalStatus.choices, default=HalalStatus.ALL
     )
+    allowed_for_allocation_only = serializers.BooleanField(
+        required=False, default=False
+    )
 
     def validate(self, data):
         if bool(data["expiration_date_start"]) ^ bool(data["expiration_date_end"]):

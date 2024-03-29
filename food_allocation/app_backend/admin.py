@@ -1,4 +1,10 @@
 from django.contrib import admin
+from app_backend.models.allocation.allocation import Allocation
+from app_backend.models.allocation.allocation_family import AllocationFamily
+from app_backend.models.allocation.allocation_family_inventory import (
+    AllocationFamilyInventory,
+)
+from app_backend.models.allocation.allocation_inventory import AllocationInventory
 from app_backend.models.authentication.user import User
 from app_backend.models.inventory_management.inventory import Inventory
 from app_backend.models.inventory_management.inventory_history import InventoryHistory
@@ -33,4 +39,11 @@ admin.site.register(ProductCategory)
 # region Inventory Management
 admin.site.register(Inventory)
 admin.site.register(InventoryHistory)
+# endregion
+
+# region Allocation
+admin.site.register(Allocation)
+admin.site.register(AllocationInventory)
+admin.site.register(AllocationFamily)
+admin.site.register(AllocationFamilyInventory)
 # endregion

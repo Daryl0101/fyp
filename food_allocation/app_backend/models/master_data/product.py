@@ -8,7 +8,7 @@ from app_backend.models.system_reference.food_category import FoodCategory
 class Product(BaseModel):
     product_no = models.CharField(max_length=50, unique=True)
     name = models.CharField(
-        max_length=50
+        max_length=100
     )  # This field is unique, but unique=True is not set because it is not unique in the database due to the is_active field
     description = models.CharField(max_length=200, blank=True)
     image = models.URLField(

@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -108,6 +109,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "food_allocation.wsgi.application"
+ASGI_APPLICATION = "food_allocation.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                ("localhost", "6379")
+                # {
+                #     "address": "redis://password@localhost:6379",
+                # }
+            ],
+        },
+    },
+}
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
@@ -182,3 +198,10 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "app_backend.User"
+
+CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBITMQ_DEFAULT_USER')}:{os.environ.get('RABBITMQ_DEFAULT_PASS')}@localhost//"
+CELERY_RESULT_BACKEND = "redis://"
+CELERY_TASK_ROUTES = {
+    "app_backend.tasks.allocation_tasks.*": {"queue": "realloc_allocation"},
+}
+# CELERY_TIMEZONE = "Asia/Malaysia"

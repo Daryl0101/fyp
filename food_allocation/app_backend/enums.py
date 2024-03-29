@@ -41,6 +41,8 @@ class ItemNoPrefix(models.TextChoices):
     INVENTORY = "INV", _("Inventory")
     PRODUCT = "P", _("Product")
     STORAGE = "S", _("Storage")
+    ALLOCATION = "A", _("Allocation")
+    PACKAGE = "PKG", _("Package")
 
 
 class InventoryMovement(models.TextChoices):
@@ -49,3 +51,26 @@ class InventoryMovement(models.TextChoices):
     ADJUSTMENT = "ADJUSTMENT", _("Adjustment")
     # EXPIRED = "EXPIRED", _("Expired")
     # OTHER = "OTHER", _("Other")
+
+
+class AllocationStatus(models.TextChoices):
+    CREATED = "CREATED", _("Created")
+    ONGOING = "ONGOING", _("Ongoing")
+    SUCCESS = "SUCCESS", _("Success")
+    FAILED = "FAILED", _("Failed")
+    COMPLETED = "COMPLETED", _("Completed")
+
+
+class AllocationFamilyStatus(models.TextChoices):
+    SERVED = "SERVED", _("Served")
+    NOT_SERVED = "NOT_SERVED", _("Not Served")
+    PENDING = "PENDING", _("Pending")
+    ACCEPTED = "ACCEPTED", _("Accepted")
+    REJECTED = "REJECTED", _("Rejected")
+
+
+class PackageStatus(models.TextChoices):
+    NEW = "NEW", _("New")
+    CANCELLED = "CANCELLED", _("Cancelled")
+    PACKED = "PACKED", _("Packed")
+    # DELIVERED = "DELIVERED", _("Delivered")

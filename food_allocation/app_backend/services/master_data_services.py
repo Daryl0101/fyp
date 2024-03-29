@@ -11,7 +11,7 @@ from app_backend.services.inventory_management_services import (
 from datetime import date
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from rest_framework import serializers
 from app_backend.enums import (
     ActionType,
@@ -385,7 +385,14 @@ def processSearchFamilies(request):
     if request_parsed.validated_data["sort_order"] == SortOrder.DESCENDING:
         scso = "-" + scso
 
-    families = families.order_by(scso)
+    # Place nulls first for last_received_date
+    # Reference https://stackoverflow.com/questions/70719951/django-admin-order-by-a-nullable-date-with-null-values-at-the-end
+    if scso == "last_received_date":
+        families = families.order_by(F("last_received_date").desc(nulls_first=True))
+    elif scso == "-last_received_date":
+        families = families.order_by(F("last_received_date").asc(nulls_last=True))
+    else:
+        families = families.order_by(scso)
 
     # endregion
 
@@ -655,3 +662,20 @@ def __calculateCalorie():
 # endregion
 
 # endregion
+
+
+def retrieveFamiliesByIds(
+    family_ids: list[int], is_validation_required: bool
+) -> list[Family]:
+    if (
+        len(family_ids) <= 0
+        or len(set(family_ids)) != len(family_ids)
+        or any(id <= 0 for id in family_ids)
+    ):
+        raise serializers.ValidationError("Invalid Family IDs")
+    families = Family.objects.filter(is_active=True).filter(id__in=family_ids)
+    if is_validation_required and (
+        families is None or len(families) <= 0 or len(families) != len(set(family_ids))
+    ):
+        raise serializers.ValidationError("Invalid Families")
+    return families
