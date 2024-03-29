@@ -1,2 +1,5 @@
 docker-compose up -d
 docker-compose down
+
+# https://stackoverflow.com/questions/41636273/celery-tasks-received-but-not-executing#:~:text=i%20think%20you%20are%20running%20celery%20in%20windows%2C%20try%20to%20add%20following%20parameter%20in%20your%20cmd%3A
+celery -A food_allocation worker --loglevel=INFO -P solo -Q realloc_allocation

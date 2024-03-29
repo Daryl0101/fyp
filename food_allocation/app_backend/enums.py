@@ -34,3 +34,43 @@ class HalalStatus(models.IntegerChoices):
 class Role(models.TextChoices):
     MANAGER = "MANAGER", _("manager")
     VOLUNTEER = "VOLUNTEER", _("volunteer")
+
+
+class ItemNoPrefix(models.TextChoices):
+    FAMILY = "F", _("Family")
+    INVENTORY = "INV", _("Inventory")
+    PRODUCT = "P", _("Product")
+    STORAGE = "S", _("Storage")
+    ALLOCATION = "A", _("Allocation")
+    PACKAGE = "PKG", _("Package")
+
+
+class InventoryMovement(models.TextChoices):
+    INBOUND = "INBOUND", _("Inbound")
+    OUTBOUND = "OUTBOUND", _("Outbound")
+    ADJUSTMENT = "ADJUSTMENT", _("Adjustment")
+    # EXPIRED = "EXPIRED", _("Expired")
+    # OTHER = "OTHER", _("Other")
+
+
+class AllocationStatus(models.TextChoices):
+    CREATED = "CREATED", _("Created")
+    ONGOING = "ONGOING", _("Ongoing")
+    SUCCESS = "SUCCESS", _("Success")
+    FAILED = "FAILED", _("Failed")
+    COMPLETED = "COMPLETED", _("Completed")
+
+
+class AllocationFamilyStatus(models.TextChoices):
+    SERVED = "SERVED", _("Served")
+    NOT_SERVED = "NOT_SERVED", _("Not Served")
+    PENDING = "PENDING", _("Pending")
+    ACCEPTED = "ACCEPTED", _("Accepted")
+    REJECTED = "REJECTED", _("Rejected")
+
+
+class PackageStatus(models.TextChoices):
+    NEW = "NEW", _("New")
+    CANCELLED = "CANCELLED", _("Cancelled")
+    PACKED = "PACKED", _("Packed")
+    # DELIVERED = "DELIVERED", _("Delivered")

@@ -5,7 +5,7 @@ from typing import Optional, Type
 from django.db import models
 from rest_framework import serializers
 from app_backend.constants import FAILED_DICT, SUCCESS_DICT
-from app_backend.enums import ActionType
+from app_backend.enums import ActionType, ItemNoPrefix
 
 from app_backend.models.authentication.user import User
 
@@ -14,11 +14,15 @@ def setCreateUpdateProperty(model, userObject: User, actionType: ActionType):
     try:
         if model is None or userObject is None:
             raise serializers.ValidationError("Model or UserObject is None")
-        model.modified_by = userObject.id
+        model.modified_by = userObject
         if actionType == ActionType.CREATE:
-            model.created_by = userObject.id
+            model.created_by = userObject
     except Exception as ex:
         raise ex
+
+
+def generateItemNoFromId(prefix: ItemNoPrefix, id: int):
+    return prefix + str(id).zfill(5)
 
 
 generatorCalledCount = 0
@@ -49,7 +53,6 @@ def baseResponseSerializerGenerator(
                 if isinstance(errors.detail, serializers.ReturnDict) or isinstance(
                     errors.detail, dict
                 ):
-                    print(errors.detail)
                     for field_name, field_errors in errors.detail.items():
                         for field_error in field_errors:
                             error_message = f"{field_name}: {field_error}"
@@ -139,10 +142,12 @@ schema_count = 0
 
 
 def schemaWrapper(
-    model: type[serializers.Serializer]
-    # | dict
-    | serializers.Serializer
-    | serializers.ModelSerializer = None,
+    model: (
+        type[serializers.Serializer]
+        # | dict
+        | serializers.Serializer
+        | serializers.ModelSerializer
+    ) = None,
 ):
     """
     Generate Schema Wrapper for Response
@@ -162,9 +167,11 @@ def schemaWrapper(
     )
     base_classes = (serializers.Serializer,)
     class_attrs = {
-        "model": treated_model
-        if model is not None
-        else serializers.BooleanField(default=True),
+        "model": (
+            treated_model
+            if model is not None
+            else serializers.BooleanField(default=True)
+        ),
         "status_name": serializers.CharField(max_length=100, default="Success"),
         "errors": serializers.ListField(
             child=serializers.CharField(max_length=100),
@@ -178,7 +185,7 @@ def enumToDict(model: type[models.Choices]):
     """
     Convert Django Enum to Dict
     """
-    choices: list(dict(str | int, str)) = []
+    choices: list[dict[str | int, str]] = []
     for id, name in model.choices:
         choices.append({"id": id, "name": name})
     return choices

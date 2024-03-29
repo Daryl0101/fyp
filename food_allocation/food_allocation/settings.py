@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -44,7 +45,7 @@ INSTALLED_APPS = [
     "rest_framework_swagger",
     "drf_spectacular",
     "app_backend.apps.AppBackendConfig",
-    "app_frontend.apps.AppFrontendConfig",
+    # "app_frontend.apps.AppFrontendConfig",
     "corsheaders",
 ]
 
@@ -108,6 +109,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "food_allocation.wsgi.application"
+ASGI_APPLICATION = "food_allocation.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                ("localhost", "6379")
+                # {
+                #     "address": "redis://password@localhost:6379",
+                # }
+            ],
+        },
+    },
+}
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
@@ -124,6 +140,20 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
+DATE_INPUT_FORMAT = [
+    "%Y-%m-%d",  # '2006-10-25'
+    "%d/%m/%Y",  # '10/25/2006'
+    "%d/%m/%y",  # '10/25/06'
+    "%b %d %Y",  # 'Oct 25 2006'
+    "%b %d, %Y",  # 'Oct 25, 2006'
+    "%d %b %Y",  # '25 Oct 2006'
+    "%d %b, %Y",  # '25 Oct, 2006'
+    "%B %d %Y",  # 'October 25 2006'
+    "%B %d, %Y",  # 'October 25, 2006'
+    "%d %B %Y",  # '25 October 2006'
+    "%d %B, %Y",  # '25 October, 2006'
+]
 
 
 # Password validation
@@ -168,3 +198,10 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "app_backend.User"
+
+CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBITMQ_DEFAULT_USER')}:{os.environ.get('RABBITMQ_DEFAULT_PASS')}@localhost//"
+CELERY_RESULT_BACKEND = "redis://"
+CELERY_TASK_ROUTES = {
+    "app_backend.tasks.allocation_tasks.*": {"queue": "realloc_allocation"},
+}
+# CELERY_TIMEZONE = "Asia/Malaysia"

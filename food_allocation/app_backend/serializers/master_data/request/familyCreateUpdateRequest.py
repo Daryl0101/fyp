@@ -1,5 +1,6 @@
 import datetime
 from rest_framework import serializers
+from rest_framework.compat import settings
 from app_backend.enums import ActivityLevel, Gender
 
 
@@ -8,7 +9,7 @@ class PersonCreateUpdateRequest(serializers.Serializer):
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
     gender = serializers.ChoiceField(choices=Gender.choices)
-    birthdate = serializers.DateField()
+    birthdate = serializers.DateField(input_formats=settings.DATE_INPUT_FORMATS)
     height = serializers.DecimalField(max_digits=10, decimal_places=2)
     weight = serializers.DecimalField(max_digits=10, decimal_places=2)
     activity_level = serializers.ChoiceField(choices=ActivityLevel.choices)

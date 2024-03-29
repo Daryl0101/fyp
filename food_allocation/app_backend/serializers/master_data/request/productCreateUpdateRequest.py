@@ -6,16 +6,24 @@ class ProductCreateUpdateRequest(serializers.Serializer):
     description = serializers.CharField(
         max_length=255, allow_blank=True, required=False, default=""
     )
-    serving_size = serializers.DecimalField(max_digits=10, decimal_places=2)
-    calorie = serializers.DecimalField(max_digits=10, decimal_places=2)  # kcal
-    carbohydrate = serializers.DecimalField(max_digits=10, decimal_places=2)  # g
-    protein = serializers.DecimalField(max_digits=10, decimal_places=2)  # g
-    fat = serializers.DecimalField(max_digits=10, decimal_places=2)  # g
-    fiber = serializers.DecimalField(max_digits=10, decimal_places=2)  # g
-    sugar = serializers.DecimalField(max_digits=10, decimal_places=2)  # g
-    saturated_fat = serializers.DecimalField(max_digits=10, decimal_places=2)  # g
-    cholesterol = serializers.DecimalField(max_digits=10, decimal_places=2)  # mg
-    sodium = serializers.DecimalField(max_digits=10, decimal_places=2)  # mg
+    serving_size = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
+    calorie = serializers.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )  # kcal
+    carbohydrate = serializers.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )  # g
+    protein = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)  # g
+    fat = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)  # g
+    fiber = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)  # g
+    sugar = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)  # g
+    saturated_fat = serializers.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )  # g
+    cholesterol = serializers.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )  # mg
+    sodium = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)  # mg
     is_halal = serializers.BooleanField()
     food_categories = serializers.ListField(child=serializers.IntegerField())
 
