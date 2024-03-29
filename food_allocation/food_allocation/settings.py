@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "rest_framework_swagger",
     "drf_spectacular",
     "app_backend.apps.AppBackendConfig",
-    "app_frontend.apps.AppFrontendConfig",
+    # "app_frontend.apps.AppFrontendConfig",
     "corsheaders",
 ]
 
