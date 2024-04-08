@@ -15,6 +15,7 @@ sectionpatterns = [
         include("app_backend.url_paths.inventory_management_urls"),
     ),
     path("allocation/", include("app_backend.url_paths.allocation_urls")),
+    path("package/", include("app_backend.url_paths.package_urls")),
 ]
 
 urlpatterns = [

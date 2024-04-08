@@ -16,9 +16,11 @@ from rest_framework import serializers
 from app_backend.enums import (
     ActionType,
     ActivityLevel,
+    AllocationFamilyStatus,
     Gender,
     HalalStatus,
     ItemNoPrefix,
+    PackageStatus,
     SortOrder,
 )
 from app_backend.models.master_data.family import Family
@@ -346,6 +348,10 @@ def processSearchFamilies(request):
 
     # region Filter
     families = Family.objects.filter(is_active=True)
+    if request_parsed.validated_data["allocation_creatable_only"]:
+        families = families.exclude(
+            packages__status__in=[PackageStatus.NEW, PackageStatus.PACKED]
+        )
 
     if not isBlank(request_parsed.validated_data["family_no"]):
         families = families.filter(
@@ -364,11 +370,11 @@ def processSearchFamilies(request):
                     "family_or_person_name"
                 ]
             )
-        )
+        ).distinct()
         families = families.filter(
             Q(name__icontains=request_parsed.validated_data["family_or_person_name"])
             | Q(members__in=members)
-        )
+        ).distinct()
 
     if request_parsed.validated_data["halal_status"] == HalalStatus.HALAL:
         families = families.filter(is_halal=True)
@@ -512,6 +518,20 @@ def processUpdateFamily(request, family_id):
     )
     if family is None:
         raise serializers.ValidationError("Invalid Family")
+    # Check if family has existing allocation
+    if family.allocation_families.filter(
+        id=family.id,
+        status__in=[
+            AllocationFamilyStatus.PENDING,
+            AllocationFamilyStatus.SERVED,
+        ],
+    ).exists():
+        raise serializers.ValidationError("Family has existing allocation")
+    # Check if family has existing package
+    if family.packages.filter(
+        id=family.id, status__in=[PackageStatus.NEW, PackageStatus.PACKED]
+    ).exists():
+        raise serializers.ValidationError("Family has existing package")
 
     request_parsed = FamilyCreateUpdateRequest(data=request.data)
     request_parsed.is_valid(raise_exception=True)
@@ -621,6 +641,23 @@ def processDeleteFamily(request, family_id):
     )
     if family is None:
         raise serializers.ValidationError("Invalid Family")
+    # Check if family has existing allocation
+    if family.allocation_families.filter(
+        id=family.id,
+        status__in=[
+            AllocationFamilyStatus.PENDING,
+            AllocationFamilyStatus.SERVED,
+        ],
+    ).exists():
+        raise serializers.ValidationError("Family has existing allocation")
+    # Check if family has existing package
+    if family.packages.filter(
+        id=family.id, status__in=[PackageStatus.NEW, PackageStatus.PACKED]
+    ).exists():
+        raise serializers.ValidationError("Family has existing package")
+
+    request_parsed = FamilyCreateUpdateRequest(data=request.data)
+    request_parsed.is_valid(raise_exception=True)
     family.is_active = False
     family.save()
     setCreateUpdateProperty(family, request.user, ActionType.UPDATE)
@@ -643,30 +680,9 @@ def processRetrieveActivityLevelDropdown(request):
     return response_serializer.data
 
 
-# endregion
-
-# region Private Methods
-
-
-# region Families
-def __calculateBmi(birthdate: date, gender: Gender, height: float, weight: float):
-    age = date.today().year - birthdate.year
-    bmi = height / ((weight / 100) ** 2)
-    pass
-
-
-def __calculateCalorie():
-    pass
-
-
-# endregion
-
-# endregion
-
-
 def retrieveFamiliesByIds(
     family_ids: list[int], is_validation_required: bool
-) -> list[Family]:
+):
     if (
         len(family_ids) <= 0
         or len(set(family_ids)) != len(family_ids)
@@ -679,3 +695,6 @@ def retrieveFamiliesByIds(
     ):
         raise serializers.ValidationError("Invalid Families")
     return families
+
+
+# endregion
