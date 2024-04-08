@@ -10,6 +10,7 @@ from app_backend.enums import (
     AllocationFamilyStatus,
     AllocationStatus,
     ItemNoPrefix,
+    PackageStatus,
 )
 from app_backend.models.allocation.allocation import Allocation
 from app_backend.models.allocation.allocation_family import AllocationFamily
@@ -59,6 +60,14 @@ def processCreateAllocation(request):
         family_ids=request_parsed.validated_data["family_ids"],
         is_validation_required=True,
     )
+    # validate no family with pending packages is in the list
+    if (
+        families.count()
+        != families.exclude(
+            packages__status__in=[PackageStatus.NEW, PackageStatus.PACKED]
+        ).count()
+    ):
+        raise serializers.ValidationError("Family with pending packages found")
 
     with transaction.atomic():
         # create allocation, set status as STATUS.CREATED, save
@@ -192,14 +201,23 @@ def processAcceptAllocationFamily(request, allocation_family_id):
     ):
         allocation_family.allocation.status = AllocationStatus.COMPLETED
         allocation_family.allocation.save()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "allocation",
+            {
+                "type": "allocation_process",
+                "message": "Allocation completed",
+            },
+        )
+    else:
 
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        "allocation",
-        {
-            "type": "accept_reject_allocation_family",
-            "message": None,
-        },
-    )
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "allocation",
+            {
+                "type": "accept_reject_allocation_family",
+                "message": None,
+            },
+        )
     result = True
     return result

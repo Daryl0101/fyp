@@ -15,6 +15,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import path
 from channels.security.websocket import AllowedHostsOriginValidator
 from app_backend.consumers.allocation_consumers import AllocationConsumer
+from app_backend.consumers.package_consumers import PackageConsumer
 from app_backend.middlewares.wsTokenAuthMiddleware import TokenAuthMiddleware
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_allocation.settings")
@@ -24,7 +25,12 @@ application = ProtocolTypeRouter(
         "http": get_asgi_application(),
         "websocket": AllowedHostsOriginValidator(
             # TokenAuthMiddleware(
-            URLRouter([path("ws/allocation", AllocationConsumer.as_asgi())])
+            URLRouter(
+                [
+                    path("ws/allocation", AllocationConsumer.as_asgi()),
+                    path("ws/package", PackageConsumer.as_asgi()),
+                ]
+            )
             # )
         ),
     }

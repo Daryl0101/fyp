@@ -9,6 +9,9 @@ class Package(BaseModel):
     family = models.ForeignKey(
         "Family", on_delete=models.PROTECT, related_name="packages"
     )
+    allocation = models.ForeignKey(
+        "Allocation", on_delete=models.PROTECT, related_name="packages"
+    )
     allocation_family = models.ForeignKey(
         "AllocationFamily", on_delete=models.PROTECT, related_name="packages"
     )

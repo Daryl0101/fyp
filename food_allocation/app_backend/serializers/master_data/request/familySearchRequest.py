@@ -13,3 +13,4 @@ class FamilySearchRequest(PaginationRequest, serializers.Serializer):
     halal_status = serializers.ChoiceField(
         choices=HalalStatus.choices, default=HalalStatus.ALL
     )
+    allocation_creatable_only = serializers.BooleanField(default=False)

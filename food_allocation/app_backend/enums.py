@@ -62,9 +62,9 @@ class AllocationStatus(models.TextChoices):
 
 
 class AllocationFamilyStatus(models.TextChoices):
-    SERVED = "SERVED", _("Served")
-    NOT_SERVED = "NOT_SERVED", _("Not Served")
     PENDING = "PENDING", _("Pending")
+    NOT_SERVED = "NOT_SERVED", _("Not Served")
+    SERVED = "SERVED", _("Served")
     ACCEPTED = "ACCEPTED", _("Accepted")
     REJECTED = "REJECTED", _("Rejected")
 
@@ -73,4 +73,4 @@ class PackageStatus(models.TextChoices):
     NEW = "NEW", _("New")
     CANCELLED = "CANCELLED", _("Cancelled")
     PACKED = "PACKED", _("Packed")
-    # DELIVERED = "DELIVERED", _("Delivered")
+    DELIVERED = "DELIVERED", _("Delivered")
