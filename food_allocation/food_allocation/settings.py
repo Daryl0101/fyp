@@ -16,6 +16,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+from celery.schedules import crontab
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "app_backend.apps.AppBackendConfig",
     # "app_frontend.apps.AppFrontendConfig",
+    "django_celery_beat",
     "corsheaders",
 ]
 
@@ -203,5 +205,27 @@ CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBITMQ_DEFAULT_USER')}:{os.envir
 CELERY_RESULT_BACKEND = "redis://"
 CELERY_TASK_ROUTES = {
     "app_backend.tasks.allocation_tasks.*": {"queue": "realloc_allocation"},
+    # "app_backend.tasks.daily_tasks.*": {
+    #     "queue": "realloc_scheduled_daily"
+    # },
 }
-# CELERY_TIMEZONE = "Asia/Malaysia"
+CELERY_TIMEZONE = "Asia/Kuala_Lumpur"
+CELERY_BEAT_SCHEDULE = {
+    "reject-expired-allocation-daily": {
+        "task": "app_backend.tasks.daily_tasks.taskProcessRejectExpiredAllocationFamilies",
+        "schedule": crontab(minute=0, hour=0),
+        # "schedule": crontab(minute="*/1"), # for testing
+        "options": {
+            "queue": "realloc_scheduled_daily",
+        },
+    },
+    "reject-expired-package-daily": {
+        "task": "app_backend.tasks.daily_tasks.taskProcessCancelExpiredPackages",
+        "schedule": crontab(minute=0, hour=0),
+        # "schedule": crontab(minute="*/1"), # for testing
+        "options": {
+            "queue": "realloc_scheduled_daily",
+        },
+    },
+}
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"

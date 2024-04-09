@@ -186,6 +186,7 @@ def processAcceptAllocationFamily(request, allocation_family_id):
     )
     # update allocation_family status to STATUS.ACCEPTED, save
     allocation_family.status = AllocationFamilyStatus.ACCEPTED
+    setCreateUpdateProperty(allocation_family, request.user, ActionType.UPDATE)
     allocation_family.save()
     # update allocation status to AllocationStatus.COMPLETED if allocation_family is the last accepted family, save
     if (
@@ -200,6 +201,9 @@ def processAcceptAllocationFamily(request, allocation_family_id):
         == allocation_family.allocation.allocation_families.count()
     ):
         allocation_family.allocation.status = AllocationStatus.COMPLETED
+        setCreateUpdateProperty(
+            allocation_family.allocation, request.user, ActionType.UPDATE
+        )
         allocation_family.allocation.save()
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(

@@ -467,9 +467,11 @@ def processEndAllocation(
                     or allocation_family.allocation_family_inventories.count()
                     > 0  # there are existing allocation family inventories
                     or any(
-                        not i.is_active or i.available_qty < j
+                        not i.is_active
+                        or i.available_qty < j
+                        or i.expiration_date <= date.today()
                         for i, j in current_family_inventories
-                    )  # there are inventories that are not active or not enough quantity
+                    )  # there are inventories that are not active or not enough quantity or inventory has expired
                     or allocation_family.family.is_active
                     is False  # family is not active
                 ):
@@ -573,6 +575,7 @@ def processRejectAllocationFamily(request, allocation_family_id):
         raise serializers.ValidationError("Invalid Allocation Family Status")
     # update allocation_family status to STATUS.REJECTED, save
     allocation_family.status = AllocationFamilyStatus.REJECTED
+    setCreateUpdateProperty(allocation_family, request.user, ActionType.UPDATE)
     allocation_family.save()
     # update allocation status to AllocationStatus.COMPLETED if allocation_family is the last accepted family, save
     if (
@@ -587,6 +590,9 @@ def processRejectAllocationFamily(request, allocation_family_id):
         == allocation_family.allocation.allocation_families.count()
     ):
         allocation_family.allocation.status = AllocationStatus.COMPLETED
+        setCreateUpdateProperty(
+            allocation_family.allocation, request.user, ActionType.UPDATE
+        )
         allocation_family.allocation.save()
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -607,6 +613,59 @@ def processRejectAllocationFamily(request, allocation_family_id):
         )
     result = True
     return result
+
+
+@transaction.atomic
+def processRejectExpiredAllocationFamilies():
+    # retrieve all allocation families with status SERVED and expired inventories
+    allocation_families = AllocationFamily.objects.filter(
+        status=AllocationFamilyStatus.SERVED,
+        inventories__expiration_date__lte=date.today(),
+    )
+    if not allocation_families.exists():
+        return
+    for af in allocation_families:
+        # update allocation_family status to STATUS.REJECTED, save
+        af.status = AllocationFamilyStatus.REJECTED
+        setCreateUpdateProperty(af, af.created_by, ActionType.UPDATE)
+        # TODO: create a separate account for the system, to differentiate system actions from user actions
+        af.save()
+        # update allocation status to AllocationStatus.COMPLETED if allocation_family is the last accepted family, save
+    channel_layer = get_channel_layer()
+    if (
+        allocation_families.filter(
+            status__in=[
+                AllocationFamilyStatus.ACCEPTED,
+                AllocationFamilyStatus.REJECTED,
+                AllocationFamilyStatus.NOT_SERVED,
+            ]
+        ).count()
+        == allocation_families.count()
+    ):
+        af.allocation.status = AllocationStatus.COMPLETED
+        setCreateUpdateProperty(
+            af.allocation, af.allocation.created_by, ActionType.UPDATE
+        )
+        af.allocation.save()
+        async_to_sync(channel_layer.group_send)(
+            "allocation",
+            {
+                "type": "allocation_process",
+                "message": "Expired allocation families have been rejected",
+            },
+        )
+        # print("Expired allocation families have been rejected - Allocation completed")
+    else:
+        async_to_sync(channel_layer.group_send)(
+            "allocation",
+            {
+                "type": "accept_reject_allocation_family",
+                "message": None,
+            },
+        )
+        # print(
+        #     "Expired allocation families have been rejected - Allocation not completed"
+        # )
 
 
 # Delayed indefinitely

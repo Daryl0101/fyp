@@ -205,7 +205,7 @@ def processPackPackage(request, package_id):
         "package",
         {
             "type": "package_state_update",
-            "message": str(package_id),
+            "message": [str(package_id)],
         },
     )
 
@@ -253,7 +253,7 @@ def processDeliverPackage(request, package_id):
         "package",
         {
             "type": "package_state_update",
-            "message": str(package_id),
+            "message": [str(package_id)],
         },
     )
 
@@ -302,12 +302,51 @@ def processCancelPackage(request, package_id):
         "package",
         {
             "type": "package_state_update",
-            "message": str(package_id),
+            "message": [str(package_id)],
         },
     )
 
     result = True
     return result
+
+
+@transaction.atomic
+def processCancelExpiredPackages():
+    packages = Package.objects.filter(
+        status__in=[PackageStatus.NEW, PackageStatus.PACKED],
+        package_items__inventory__expiration_date__lte=date.today(),
+    )
+    if not packages.exists():
+        return
+    for package in packages:
+        if package.status == PackageStatus.NEW:
+            # package_items = PackageItem.objects.filter(package=package)
+            package_items = package.package_items.all()
+            for package_item in package_items:
+                package_item.inventory.available_qty += package_item.quantity
+                setCreateUpdateProperty(
+                    model=package_item.inventory,
+                    userObject=package.created_by,
+                    actionType=ActionType.UPDATE,
+                )
+                package_item.inventory.save()
+        package.status = PackageStatus.CANCELLED
+        setCreateUpdateProperty(
+            model=package, userObject=package.created_by, actionType=ActionType.UPDATE
+        )
+        package.save()
+        createPackageHistory(
+            package, package.created_by, "Expired inventory in package"
+        )
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "package",
+        {
+            "type": "package_state_update",
+            "message": [str(package.id) for package in packages],
+        },
+    )
 
 
 # region Called by other services
