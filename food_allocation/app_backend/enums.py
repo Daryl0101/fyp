@@ -74,3 +74,8 @@ class PackageStatus(models.TextChoices):
     CANCELLED = "CANCELLED", _("Cancelled")
     PACKED = "PACKED", _("Packed")
     DELIVERED = "DELIVERED", _("Delivered")
+
+
+class NotificationReadStatus(models.TextChoices):
+    UNREAD = "UNREAD", _("Unread")
+    READ = "READ", _("Read")

@@ -16,6 +16,7 @@ sectionpatterns = [
     ),
     path("allocation/", include("app_backend.url_paths.allocation_urls")),
     path("package/", include("app_backend.url_paths.package_urls")),
+    path("notification/", include("app_backend.url_paths.notification_urls")),
 ]
 
 urlpatterns = [

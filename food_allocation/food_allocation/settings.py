@@ -90,7 +90,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
+CORS_ORIGIN_WHITELIST = (os.getenv("FRONTEND_BASE_URL"),)
 
 ROOT_URLCONF = "food_allocation.urls"
 
@@ -213,16 +213,32 @@ CELERY_TIMEZONE = "Asia/Kuala_Lumpur"
 CELERY_BEAT_SCHEDULE = {
     "reject-expired-allocation-daily": {
         "task": "app_backend.tasks.daily_tasks.taskProcessRejectExpiredAllocationFamilies",
-        "schedule": crontab(minute=0, hour=0),
-        # "schedule": crontab(minute="*/1"), # for testing
+        # "schedule": crontab(minute=0, hour=0),
+        "schedule": crontab(minute="*/1"),  # for testing
         "options": {
             "queue": "realloc_scheduled_daily",
         },
     },
     "reject-expired-package-daily": {
         "task": "app_backend.tasks.daily_tasks.taskProcessCancelExpiredPackages",
-        "schedule": crontab(minute=0, hour=0),
-        # "schedule": crontab(minute="*/1"), # for testing
+        # "schedule": crontab(minute=0, hour=0),
+        "schedule": crontab(minute="*/1"),  # for testing
+        "options": {
+            "queue": "realloc_scheduled_daily",
+        },
+    },
+    "inform-expired-inventories-daily": {
+        "task": "app_backend.tasks.daily_tasks.taskProcessInformExpiredInventories",
+        # "schedule": crontab(minute=0, hour=0),
+        "schedule": crontab(minute="*/1"),  # for testing
+        "options": {
+            "queue": "realloc_scheduled_daily",
+        },
+    },
+    "remove-expired-notifications-daily": {
+        "task": "app_backend.tasks.daily_tasks.taskProcessRemoveExpiredNotifications",
+        # "schedule": crontab(minute=0, hour=0),
+        "schedule": crontab(minute="*/1"),  # for testing
         "options": {
             "queue": "realloc_scheduled_daily",
         },
