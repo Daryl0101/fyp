@@ -23,6 +23,7 @@ def processRejectExpiredAllocationFamilies():
     )
     if not allocation_families.exists():
         return
+    current_allocation = allocation_families.first().allocation
     with transaction.atomic():
         for af in allocation_families:
             # update allocation_family status to STATUS.REJECTED, save
@@ -31,33 +32,33 @@ def processRejectExpiredAllocationFamilies():
             # TODO: create a separate account for the system, to differentiate system actions from user actions
             af.save()
             # update allocation status to AllocationStatus.COMPLETED if allocation_family is the last accepted family, save
-        channel_layer = get_channel_layer()
         if (
-            allocation_families.filter(
+            current_allocation.allocation_families.filter(
                 status__in=[
                     AllocationFamilyStatus.ACCEPTED,
                     AllocationFamilyStatus.REJECTED,
                     AllocationFamilyStatus.NOT_SERVED,
                 ]
             ).count()
-            == allocation_families.count()
+            == current_allocation.allocation_families.count()
         ):
-            af.allocation.status = AllocationStatus.COMPLETED
+            current_allocation.status = AllocationStatus.COMPLETED
             setCreateUpdateProperty(
-                af.allocation, af.allocation.created_by, ActionType.UPDATE
+                current_allocation, current_allocation.created_by, ActionType.UPDATE
             )
-            af.allocation.save()
+            current_allocation.save()
 
     ngo_managers = retrieveNGOManagers()
+    channel_layer = get_channel_layer()
     if (
-        allocation_families.filter(
+        current_allocation.allocation_families.filter(
             status__in=[
                 AllocationFamilyStatus.ACCEPTED,
                 AllocationFamilyStatus.REJECTED,
                 AllocationFamilyStatus.NOT_SERVED,
             ]
         ).count()
-        == allocation_families.count()
+        == current_allocation.allocation_families.count()
     ):
         async_to_sync(channel_layer.group_send)(
             "allocation",
