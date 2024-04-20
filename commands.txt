@@ -8,3 +8,7 @@ celery -A food_allocation worker --loglevel=INFO -P solo -Q realloc_scheduled_da
 
 # Start scheduler
 celery -A food_allocation beat --loglevel=INFO
+
+# Setup Power BI workspace
+https://community.fabric.microsoft.com/t5/Desktop/Power-BI-Desktop-ODBC-Connectors-to-PostgreSQL-with-Direct-Query/td-p/1475352
+https://thomasthornton.cloud/2022/06/23/power-bi-gateway-error-when-connecting-to-postgresql-fix/

@@ -6,9 +6,13 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from rest_framework import serializers
 
+from app_backend.constants import PERIOD
 from app_backend.models.authentication.user import User
 from app_backend.models.package.package_history import PackageHistory
 from app_backend.models.package.package_item import PackageItem
+from app_backend.serializers.base.request.periodIntervalRequest import (
+    PeriodIntervalRequest,
+)
 from app_backend.serializers.package.request.packageSearchRequest import (
     PackageSearchRequest,
 )
@@ -27,13 +31,14 @@ if TYPE_CHECKING:
     from app_backend.models.master_data.family import Family
 from app_backend.enums import (
     ActionType,
+    Interval,
     InventoryMovement,
     ItemNoPrefix,
     PackageStatus,
     SortOrder,
 )
 from app_backend.models.package.package import Package
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 
 
 def processSearchPackages(request):
@@ -308,6 +313,27 @@ def processCancelPackage(request, package_id):
 
     result = True
     return result
+
+
+def processViewPackageDeliveredCountDashboard(request):
+    # region Parse request
+    request_parsed = PeriodIntervalRequest(data=request.query_params)
+    request_parsed.is_valid(raise_exception=True)
+    # endregion
+
+    packages_count = PackageHistory.objects.filter(
+        action=PackageStatus.DELIVERED,
+        created_at__range=(
+            datetime.combine(
+                date.today()
+                - timedelta(days=PERIOD[request_parsed.validated_data["period"]]),
+                time.min,
+            ).astimezone(),
+            datetime.combine(date.today(), time.max).astimezone(),
+        ),
+    ).count()
+
+    return packages_count
 
 
 # region Called by other services
