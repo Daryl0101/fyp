@@ -25,7 +25,7 @@ from app_backend.decorators import response_handler
 )
 @api_view(["PATCH"])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated, IsNGOManager])
+@permission_classes([IsAuthenticated])
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def notificationMarkAsRead(request):
     return processUpdateNotificationReadStatusToIsRead(request)
@@ -36,7 +36,7 @@ def notificationMarkAsRead(request):
 )
 @api_view(["DELETE"])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated, IsNGOManager])
+@permission_classes([IsAuthenticated])
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def notificationDelete(request, notification_id):
     return processRemoveNotification(request, notification_id)
@@ -48,7 +48,7 @@ def notificationDelete(request, notification_id):
 )
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated, IsNGOManager])
+@permission_classes([IsAuthenticated])
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def registerUserFCMToken(request):
     return processRegisterUserFCMToken(request)
@@ -60,7 +60,7 @@ def registerUserFCMToken(request):
 )
 @api_view(["PUT"])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated, IsNGOManager])
+@permission_classes([IsAuthenticated])
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def unregisterUserFCMToken(request):
     return processUnregisterUserFCMToken(request)
