@@ -10,6 +10,9 @@ from rest_framework.permissions import IsAuthenticated
 
 from app_backend.decorators import response_handler
 from app_backend.permissions import IsNGOManager
+from app_backend.serializers.base.request.periodIntervalRequest import (
+    PeriodIntervalRequest,
+)
 from app_backend.serializers.package.request.packageSearchRequest import (
     PackageSearchRequest,
 )
@@ -25,6 +28,7 @@ from app_backend.services.package_services import (
     processPackPackage,
     processSearchPackages,
     processViewPackage,
+    processViewPackageDeliveredCountDashboard,
 )
 from app_backend.utils import schemaWrapper
 
@@ -84,3 +88,15 @@ def packageDeliver(request, package_id):
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def packageCancel(request, package_id):
     return processCancelPackage(request, package_id)
+
+
+@extend_schema(
+    parameters=[PeriodIntervalRequest],
+    responses={200: schemaWrapper(serializers.IntegerField())},
+)
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=serializers.IntegerField(allow_null=True))
+def packageDeliveredCountDashboard(request):
+    return processViewPackageDeliveredCountDashboard(request)

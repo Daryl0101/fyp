@@ -2,6 +2,10 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from app_backend.permissions import IsNGOManager
+from app_backend.serializers.base.request.periodIntervalRequest import (
+    PeriodIntervalRequest,
+)
 from app_backend.serializers.inventory_management.request.inventoryAdjustRequest import (
     InventoryAdjustRequest,
 )
@@ -22,6 +26,7 @@ from app_backend.services.inventory_management_services import (
     processDeleteInventory,
     processSearchInventories,
     processViewInventory,
+    processViewInboundJobsCountDashboard,
 )
 from app_backend.services_aggregation.inventory_management_services_aggregation import (
     processInboundInventory,
@@ -92,3 +97,15 @@ def inventoryAdjust(request, inventory_id):
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def inventoryDelete(request, inventory_id):
     return processDeleteInventory(request, inventory_id)
+
+
+@extend_schema(
+    parameters=[PeriodIntervalRequest],
+    responses={200: schemaWrapper(serializers.IntegerField())},
+)
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated, IsNGOManager])
+@response_handler(responses=serializers.IntegerField(allow_null=True))
+def inboundJobsCountDashboard(request):
+    return processViewInboundJobsCountDashboard(request)

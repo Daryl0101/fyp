@@ -290,3 +290,7 @@ def processDeleteUser(request, user_id: uuid):
 
     result = True
     return result
+
+
+def retrieveNGOManagers():
+    return User.objects.filter(is_ngo_manager=True, is_active=True)

@@ -1,4 +1,3 @@
-# @transaction.atomic
 from datetime import date
 from channels.consumer import get_channel_layer
 from channels.generic.websocket import async_to_sync
@@ -21,8 +20,12 @@ from app_backend.models.allocation.allocation_inventory import AllocationInvento
 from app_backend.serializers.allocation.request.allocationCreateRequest import (
     AllocationCreateRequest,
 )
+
+# from app_backend.services.authentication_services import retrieveNGOManagers
 from app_backend.services.inventory_management_services import retrieveInventoriesByIds
 from app_backend.services.master_data_services import retrieveFamiliesByIds
+
+# from app_backend.services.notification_services import addNotificationBatch
 from app_backend.services.package_services import createPackageByAllocationFamily
 from app_backend.tasks.allocation_tasks import taskProcessStartAllocation
 from app_backend.utils import generateItemNoFromId, setCreateUpdateProperty
@@ -186,6 +189,7 @@ def processAcceptAllocationFamily(request, allocation_family_id):
     )
     # update allocation_family status to STATUS.ACCEPTED, save
     allocation_family.status = AllocationFamilyStatus.ACCEPTED
+    setCreateUpdateProperty(allocation_family, request.user, ActionType.UPDATE)
     allocation_family.save()
     # update allocation status to AllocationStatus.COMPLETED if allocation_family is the last accepted family, save
     if (
@@ -200,6 +204,9 @@ def processAcceptAllocationFamily(request, allocation_family_id):
         == allocation_family.allocation.allocation_families.count()
     ):
         allocation_family.allocation.status = AllocationStatus.COMPLETED
+        setCreateUpdateProperty(
+            allocation_family.allocation, request.user, ActionType.UPDATE
+        )
         allocation_family.allocation.save()
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(

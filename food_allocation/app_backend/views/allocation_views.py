@@ -45,7 +45,7 @@ from app_backend.services.allocation_services import (
     processValidateNewAllocationIsAllowed,
     processViewAllocation,
 )
-from app_backend.services_orchestration.allocation_services_orchestration import (
+from app_backend.services_orchestration.allocation.allocation_service_orchestration import (
     processAcceptAllocationFamily,
     processCreateAllocation,
 )

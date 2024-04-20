@@ -74,3 +74,18 @@ class PackageStatus(models.TextChoices):
     CANCELLED = "CANCELLED", _("Cancelled")
     PACKED = "PACKED", _("Packed")
     DELIVERED = "DELIVERED", _("Delivered")
+
+
+class NotificationReadStatus(models.TextChoices):
+    UNREAD = "UNREAD", _("Unread")
+    READ = "READ", _("Read")
+
+
+class Interval(models.TextChoices):
+    # SECOND = "SECOND", _("Second")
+    # MINUTE = "MINUTE", _("Minute")
+    # HOUR = "HOUR", _("Hour")
+    DAY = "DAY", _("Day")
+    WEEK = "WEEK", _("Week")
+    MONTH = "MONTH", _("Month")
+    YEAR = "YEAR", _("Year")

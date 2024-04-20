@@ -28,4 +28,9 @@ urlpatterns = [
         package_views.packageCancel,
         name="cancel-package",
     ),
+    path(
+        "delivered-count/dashboard",
+        package_views.packageDeliveredCountDashboard,
+        name="packages-delivered-count-dashboard",
+    ),
 ]

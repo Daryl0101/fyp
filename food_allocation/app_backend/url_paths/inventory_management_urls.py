@@ -29,4 +29,9 @@ urlpatterns = [
         inventory_management_views.inventoryDelete,
         name="delete-inventory",
     ),
+    path(
+        "inventories/inbound-jobs-count/dashboard",
+        inventory_management_views.inboundJobsCountDashboard,
+        name="inbound-jobs-count-dashboard",
+    ),
 ]

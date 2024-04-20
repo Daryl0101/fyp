@@ -1,6 +1,11 @@
 from __future__ import annotations
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING
+
+from app_backend.constants import PERIOD
+from app_backend.serializers.base.request.periodIntervalRequest import (
+    PeriodIntervalRequest,
+)
 
 
 if TYPE_CHECKING:
@@ -249,6 +254,27 @@ def processDeleteInventory(request, inventory_id: int):
 
     result = True
     return result
+
+
+def processViewInboundJobsCountDashboard(request):
+    # region Parse request
+    request_parsed = PeriodIntervalRequest(data=request.query_params)
+    request_parsed.is_valid(raise_exception=True)
+    # endregion
+
+    inventories_count = InventoryHistory.objects.filter(
+        movement=InventoryMovement.INBOUND,
+        created_at__range=(
+            datetime.combine(
+                date.today()
+                - timedelta(days=PERIOD[request_parsed.validated_data["period"]]),
+                time.min,
+            ).astimezone(),
+            datetime.combine(date.today(), time.max).astimezone(),
+        ),
+    ).count()
+
+    return inventories_count
 
 
 # endregion
