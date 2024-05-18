@@ -227,6 +227,14 @@ CELERY_BEAT_SCHEDULE = {
             "queue": "realloc_scheduled_daily",
         },
     },
+    "inform-nearing-expired-inventories-daily": {
+        "task": "app_backend.tasks.daily_tasks.taskProcessInformNearingExpiredInventories",
+        "schedule": crontab(minute=0, hour=0),
+        # "schedule": crontab(minute="*/1"),  # for testing
+        "options": {
+            "queue": "realloc_scheduled_daily",
+        },
+    },
     "inform-expired-inventories-daily": {
         "task": "app_backend.tasks.daily_tasks.taskProcessInformExpiredInventories",
         "schedule": crontab(minute=0, hour=0),

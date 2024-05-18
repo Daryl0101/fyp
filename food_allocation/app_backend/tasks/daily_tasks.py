@@ -5,6 +5,7 @@ from app_backend.services_orchestration.allocation.daily_allocation_service_orch
 )
 from app_backend.services_orchestration.inventory_management_services_orchestration import (
     processInformExpiredInventories,
+    processInformNearingExpiredInventories,
 )
 from app_backend.services_orchestration.package_services_orchestration import (
     processCancelExpiredPackages,
@@ -19,6 +20,11 @@ def taskProcessRejectExpiredAllocationFamilies():
 @shared_task
 def taskProcessCancelExpiredPackages():
     processCancelExpiredPackages()
+
+
+@shared_task
+def taskProcessInformNearingExpiredInventories():
+    processInformNearingExpiredInventories()
 
 
 @shared_task
