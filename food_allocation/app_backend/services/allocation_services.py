@@ -449,10 +449,24 @@ def processEndAllocation(
             allocation.status = AllocationStatus.SUCCESS
 
             # for each allocation_family in the allocation result
-            for ar in allocation_result["data"]:
-                allocation_family = allocation_families.filter(id=ar.id).first()
-                if allocation_family is None:
-                    raise serializers.ValidationError("Invalid Allocation Family")
+            for allocation_family in allocation_families:
+                # find the single allocation_family in allocation_result["data"]
+
+                try:
+                    ar = list(
+                        filter(
+                            lambda x: x.id == allocation_family.id,
+                            allocation_result["data"],
+                        )
+                    )[0]
+                except Exception:
+                    allocation_family.status = AllocationFamilyStatus.NOT_SERVED
+                    allocation_family.save()
+                    continue
+                # for ar in allocation_result["data"]:
+                #     allocation_family = allocation_families.filter(id=ar.id).first()
+                #     if allocation_family is None:
+                #         raise serializers.ValidationError("Invalid Allocation Family")
 
                 # get all inventories for the family in current allocation
                 current_family_inventories = [
