@@ -14,6 +14,7 @@ services:
       - postgres_volume_fyp:/var/lib/postgresql/data
     networks:
       - dockernet
+    command: ["postgres", "-c", "log_statement=all"]
   rabbitmq:
     image: rabbitmq:management
     container_name: ${RABBITMQ_CONTAINER_NAME}
