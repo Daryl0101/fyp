@@ -360,10 +360,10 @@ def repair_operator(
                 )  # KIV, pending testing
                 tabu_beneficiaries.append(chosen_beneficiary)
 
-    return sum(
-        [x.priority * x.objective_value for x in served_beneficiaries]
-        * len(tabu_beneficiaries)
-    )
+    return sum([x.priority * x.objective_value for x in served_beneficiaries])
+
+
+# * len(tabu_beneficiaries)
 
 
 def scip(
@@ -482,6 +482,7 @@ def adaptive_heuristic(
     total_inventories: list[Inventories],
     diversification: int,
 ):
+    solutions = []
     served_beneficiaries: list[Beneficiary] = []
     tabu_beneficiaries: list[Beneficiary] = []
     destroy_operators = {
@@ -519,6 +520,7 @@ def adaptive_heuristic(
         weights=weights,
     )
     best_solution = current_solution
+    solutions.append(current_solution)
     current_served_beneficiaries = copy.deepcopy(served_beneficiaries)
     for i in range(diversification - 1):  # Diversification
         destroy_operator_5(
@@ -550,6 +552,7 @@ def adaptive_heuristic(
             )
             if current_solution < best_solution:  # better solution found
                 best_solution = current_solution
+                solutions.append(best_solution)
                 served_beneficiaries = copy.deepcopy(current_served_beneficiaries)
                 update_item_selection_probability(
                     dc=destroy_operators,
@@ -565,7 +568,7 @@ def adaptive_heuristic(
                     tabu_destroy_operators.append(chosen_destroy_operator)
                 j += 1
             tabu_beneficiaries.clear()
-    return (served_beneficiaries, best_solution)
+    return (served_beneficiaries, best_solution, solutions)
 
 
 def allocationProcess(
@@ -599,7 +602,7 @@ def allocationProcess(
         )
     result: AllocationProcessResult = {"status": None, "data": None, "log": ""}
     try:
-        heuristic_result, objective_value = adaptive_heuristic(
+        heuristic_result, objective_value, objective_value_history = adaptive_heuristic(
             total_inventories=inventories_data,
             total_beneficiaries=families_data,
             diversification=diversification,
@@ -608,7 +611,9 @@ def allocationProcess(
             raise Exception("Heuristic failed to allocate inventories")
         result["status"] = "SUCCESS"
         result["data"] = heuristic_result
-        # result["log"] = f"Objective Value: {'{0:.2f}'.format(objective_value)}"
+        result["log"] = (
+            f"Objective Value: {'{0:.2f}'.format(objective_value)}\nObjective Value History: {[float(i) for i in objective_value_history]}"
+        )
     except Exception as e:
         result["status"] = "FAILED"
         result["log"] = str(e)
