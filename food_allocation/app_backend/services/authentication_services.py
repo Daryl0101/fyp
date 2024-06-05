@@ -86,7 +86,7 @@ def processLoginUser(request):
         raise serializers.ValidationError("User does not exist")
 
     # Get or create user's token
-    access_token, is_created = Token.objects.create(user=user)
+    access_token, is_created = Token.objects.get_or_create(user=user)
     if access_token is None:
         raise serializers.ValidationError("Token creation failed")
 
