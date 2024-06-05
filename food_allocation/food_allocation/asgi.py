@@ -11,6 +11,10 @@ import os
 
 # from django.conf.urls import url
 from django.core.asgi import get_asgi_application
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_allocation.settings")
+asgi_app = get_asgi_application()
+
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import path
 from channels.security.websocket import AllowedHostsOriginValidator
@@ -18,12 +22,9 @@ from app_backend.consumers.allocation_consumers import AllocationConsumer
 from app_backend.consumers.package_consumers import PackageConsumer
 from app_backend.middlewares.wsTokenAuthMiddleware import TokenAuthMiddleware
 
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_allocation.settings")
-os.environ["DJANGO_SETTINGS_MODULE"] = "food_allocation.settings"
-
 application = ProtocolTypeRouter(
     {
-        "http": get_asgi_application(),
+        "http": asgi_app,
         "websocket": AllowedHostsOriginValidator(
             # TokenAuthMiddleware(
             URLRouter(
