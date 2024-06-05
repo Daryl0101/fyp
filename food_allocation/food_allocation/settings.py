@@ -75,6 +75,7 @@ SPECTACULAR_SETTINGS = {
         presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
         layout: "StandaloneLayout",
     }""",
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 MIDDLEWARE = [
