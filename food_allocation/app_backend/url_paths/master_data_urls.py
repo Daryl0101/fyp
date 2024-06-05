@@ -34,6 +34,11 @@ urlpatterns = [
         master_data_views.productDelete,
         name="delete-product",
     ),
+    path(
+        "products/ner",
+        master_data_views.productNER,
+        name="product-ner",
+    ),
     # endregion
     # region Families
     path(

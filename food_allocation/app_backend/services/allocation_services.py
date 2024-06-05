@@ -15,7 +15,7 @@ from app_backend.models.allocation.allocation_family_inventory import (
 from app_backend.serializers.allocation.response.allocationIsAllowedValidationResponse import (
     AllocationIsAllowedValidationResponse,
 )
-from app_backend.services.allocation_processes import (
+from app_backend.processes.allocation_processes import (
     AllocationProcessResult,
     allocationProcess,
 )
@@ -668,7 +668,7 @@ def __calculateNutrientsRequired(family: Family) -> DataDictNutrients:
     result = []
     members = family.members.all()
     for member in members:
-        # BMR calculation (Miffin-St Jeor Equation)
+        # BMR calculation (Mifflin-St Jeor Equation)
         age = __calculateAge(member.birthdate)
         bmr = 10 * member.weight + decimal.Decimal(6.25) * member.height - 5 * age
         if member.gender == Gender.MALE:
@@ -679,7 +679,7 @@ def __calculateNutrientsRequired(family: Family) -> DataDictNutrients:
         tdee = bmr * (
             decimal.Decimal(1.2) + (member.activity_level - 1) * decimal.Decimal(0.175)
         )
-        # Nutrients calculation - Daily Recommended Intake (DRI)
+        # Nutrients calculation - Dietary Reference Intake (DRI)
         nutrient = None
         if age <= 3:
             nutrient = {

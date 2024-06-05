@@ -2,8 +2,19 @@
 
 
 # if TYPE_CHECKING:
+import os
+
+from PIL import Image
+from app_backend.models.master_data.nutritional_label import NutritionalLabel
+from app_backend.processes.ner_processes import detect_advanced
+from app_backend.serializers.master_data.request.productNutritionalInformationNERRequest import (
+    ProductNutritionalInformationNERRequest,
+)
 from app_backend.serializers.master_data.request.productUpdateRequest import (
     ProductUpdateRequest,
+)
+from app_backend.serializers.master_data.response.productNutritionalInformationNERResponse import (
+    ProductNutritionalInformationNERResponse,
 )
 from app_backend.services.inventory_management_services import (
     retrieveInventoriesByProduct,
@@ -313,6 +324,18 @@ def processDeleteProduct(request, product_id):
     result = True
 
     return result
+
+
+def processProductNutritionalInformationNER(request):
+    request_parsed = ProductNutritionalInformationNERRequest(data=request.data)
+    request_parsed.is_valid(raise_exception=True)
+
+    print(request_parsed.validated_data["image"].__dict__)
+    ner_result = detect_advanced(
+        Image.open(request_parsed.validated_data["image"].file).convert("RGB")
+    )
+    result = ProductNutritionalInformationNERResponse(data=ner_result)
+    return result.initial_data
 
 
 def retrieveActiveProductById(id: int, is_validation_required: bool):
@@ -680,9 +703,7 @@ def processRetrieveActivityLevelDropdown(request):
     return response_serializer.data
 
 
-def retrieveFamiliesByIds(
-    family_ids: list[int], is_validation_required: bool
-):
+def retrieveFamiliesByIds(family_ids: list[int], is_validation_required: bool):
     if (
         len(family_ids) <= 0
         or len(set(family_ids)) != len(family_ids)
