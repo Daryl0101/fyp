@@ -18,7 +18,8 @@ from app_backend.consumers.allocation_consumers import AllocationConsumer
 from app_backend.consumers.package_consumers import PackageConsumer
 from app_backend.middlewares.wsTokenAuthMiddleware import TokenAuthMiddleware
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_allocation.settings")
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_allocation.settings")
+os.environ["DJANGO_SETTINGS_MODULE"] = "food_allocation.settings"
 
 application = ProtocolTypeRouter(
     {

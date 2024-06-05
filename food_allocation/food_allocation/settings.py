@@ -25,7 +25,7 @@ from celery.schedules import crontab
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -90,6 +90,8 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
+CSRF_COOKIE_SECURE = True
+
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ORIGIN_WHITELIST = (os.getenv("FRONTEND_BASE_URL"),)
 
@@ -141,6 +143,12 @@ DATABASES = {
         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
         "HOST": "localhost",
         "PORT": "5432",
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
     }
 }
 
