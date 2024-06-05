@@ -15,7 +15,7 @@ from app_backend.models.allocation.allocation_family_inventory import (
 from app_backend.serializers.allocation.response.allocationIsAllowedValidationResponse import (
     AllocationIsAllowedValidationResponse,
 )
-from app_backend.services.allocation_processes import (
+from app_backend.processes.allocation_processes import (
     AllocationProcessResult,
     allocationProcess,
 )
