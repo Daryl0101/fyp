@@ -1,3 +1,4 @@
+from django.http.multipartparser import MultiPartParser
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers
 from rest_framework.authentication import TokenAuthentication
@@ -10,6 +11,9 @@ from app_backend.serializers.master_data.request.familySearchRequest import (
 )
 from app_backend.serializers.master_data.request.productCreateUpdateRequest import (
     ProductCreateUpdateRequest,
+)
+from app_backend.serializers.master_data.request.productNutritionalInformationNERRequest import (
+    ProductNutritionalInformationNERRequest,
 )
 from app_backend.serializers.master_data.request.productSearchRequest import (
     ProductSearchRequest,
@@ -32,6 +36,9 @@ from app_backend.serializers.master_data.response.genderDropdownResponse import 
 from app_backend.serializers.master_data.response.productDetailResponse import (
     ProductDetailResponse,
 )
+from app_backend.serializers.master_data.response.productNutritionalInformationNERResponse import (
+    ProductNutritionalInformationNERResponse,
+)
 from app_backend.serializers.master_data.response.productSearchResponse import (
     ProductSearchResponse,
 )
@@ -40,6 +47,7 @@ from app_backend.services.master_data_services import (
     processCreateProduct,
     processDeleteFamily,
     processDeleteProduct,
+    processProductNutritionalInformationNER,
     processRetrieveActivityLevelDropdown,
     processRetrieveGenderDropdown,
     processSearchFamilies,
@@ -54,6 +62,7 @@ from app_backend.utils import schemaWrapper
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
+    parser_classes,
     permission_classes,
 )
 from app_backend.decorators import response_handler
@@ -129,6 +138,19 @@ def productUpdateNutritionalInformation(request, product_id):
 @response_handler(responses=serializers.BooleanField(allow_null=True))
 def productDelete(request, product_id):
     return processDeleteProduct(request, product_id)
+
+
+@extend_schema(
+    request=ProductNutritionalInformationNERRequest,
+    responses={200: schemaWrapper(ProductNutritionalInformationNERResponse)},
+)
+@parser_classes([MultiPartParser])
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@response_handler(responses=ProductNutritionalInformationNERResponse(allow_null=True))
+def productNER(request):
+    return processProductNutritionalInformationNER(request)
 
 
 # endregion
