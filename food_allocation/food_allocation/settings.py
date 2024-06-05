@@ -253,3 +253,28 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# region Storage Settings
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": os.environ.get("MINIO_ROOT_USER"),
+            "secret_key": os.environ.get("MINIO_ROOT_PASSWORD"),
+            "bucket_name": os.environ.get("MINIO_BUCKET_NAME"),
+            "endpoint_url": os.environ.get("MINIO_ENDPOINT_URL"),
+            "file_overwrite": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": os.environ.get("MINIO_ROOT_USER"),
+            "secret_key": os.environ.get("MINIO_ROOT_PASSWORD"),
+            "bucket_name": "staticfiles",
+            "endpoint_url": os.environ.get("MINIO_ENDPOINT_URL"),
+            "file_overwrite": False,
+        },
+    },
+}
+# endregion
