@@ -35,8 +35,37 @@ services:
       - redis_data:/data
     networks:
       - dockernet
+  minio:
+    image: minio/minio:latest
+    container_name: ${MINIO_CONTAINER_NAME}
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server /data --console-address :9001
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_storage:/data
+    networks:
+      - dockernet
+  minio-create-bucket:
+    image: minio/mc:latest
+    container_name: ${MINIO_MC_CONTAINER_NAME}
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add --api s3v4 s3 http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb s3/${MINIO_BUCKET_NAME};
+      /usr/bin/mc policy set public s3/${MINIO_BUCKET_NAME};"
+    depends_on:
+      - minio
+    networks:
+      - dockernet
 volumes:
   postgres_volume_fyp:
   redis_data:
+  minio_storage:
 networks:
   dockernet:
