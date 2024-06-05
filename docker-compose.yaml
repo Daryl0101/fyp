@@ -3,7 +3,7 @@ version: "1"
 services:
   postgres:
     image: postgres:16
-    container_name: ${POSTGRES_CONTAINER_NAME}
+    container_name: postgres_container
     ports:
       - "5432:5432"
     environment:
@@ -17,7 +17,7 @@ services:
     command: ["postgres", "-c", "log_statement=all"]
   rabbitmq:
     image: rabbitmq:management
-    container_name: ${RABBITMQ_CONTAINER_NAME}
+    container_name: rabbitmq_container
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -28,7 +28,7 @@ services:
       - dockernet
   redis:
     image: redis:latest
-    container_name: ${REDIS_CONTAINER_NAME}
+    container_name: redis_container
     ports:
       - "6379:6379"
     volumes:
@@ -37,12 +37,10 @@ services:
       - dockernet
   minio:
     image: minio/minio:latest
-    container_name: ${MINIO_CONTAINER_NAME}
+    container_name: minio_container
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
     command: server /data --console-address :9001
     ports:
       - "9000:9000"
@@ -53,7 +51,7 @@ services:
       - dockernet
   minio-create-bucket:
     image: minio/mc:latest
-    container_name: ${MINIO_MC_CONTAINER_NAME}
+    container_name: minio_mc_container
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add --api s3v4 s3 http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
