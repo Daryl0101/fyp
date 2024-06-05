@@ -1,19 +1,10 @@
 from rest_framework import serializers
 import json
-import time
 import cv2
-import pytesseract
 from PIL import Image, ImageEnhance
 import numpy as np
 import os
-import re
 import tensorflow as tf
-from app_backend.lib.text_connector.detectors import TextDetector
-from app_backend.lib.text_connector.text_connect_cfg import Config as TextLineCfg
-from app_backend.lib.rpn_msr.proposal_layer_tf import proposal_layer
-from app_backend.lib.fast_rcnn.config import cfg, cfg_from_file
-from app_backend.lib.fast_rcnn.test import _get_blobs
-import difflib
 import google.generativeai as genai
 
 # region Gemini Configs
