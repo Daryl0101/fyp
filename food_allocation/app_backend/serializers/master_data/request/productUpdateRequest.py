@@ -24,7 +24,7 @@ class ProductUpdateRequest(serializers.Serializer):
     def validate(self, data):
         if data["serving_size"] <= 0:
             raise serializers.ValidationError("Serving size must be greater than 0")
-        if data["calorie"] < 0:
+        if data["calorie"] <= 0:
             raise serializers.ValidationError("Invalid Calorie amount")
         if data["carbohydrate"] < 0:
             raise serializers.ValidationError("Invalid Carbohydrate amount")
@@ -42,7 +42,8 @@ class ProductUpdateRequest(serializers.Serializer):
             raise serializers.ValidationError("Invalid Cholesterol amount")
         if data["sodium"] < 0:
             raise serializers.ValidationError("Invalid Sodium amount")
-        if data["calorie"] + data["carbohydrate"] + data["protein"] + data["fat"] <= 0:
+        if data["carbohydrate"] + data["protein"] + data["fat"] <= 0:
             raise serializers.ValidationError(
                 "Food has no nutritional content. Please check your input."
             )
+        return data
