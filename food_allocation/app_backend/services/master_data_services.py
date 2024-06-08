@@ -666,7 +666,7 @@ def processDeleteFamily(request, family_id):
         raise serializers.ValidationError("Invalid Family")
     # Check if family has existing allocation
     if family.allocation_families.filter(
-        id=family.id,
+        family=family,
         status__in=[
             AllocationFamilyStatus.PENDING,
             AllocationFamilyStatus.SERVED,
@@ -675,12 +675,12 @@ def processDeleteFamily(request, family_id):
         raise serializers.ValidationError("Family has existing allocation")
     # Check if family has existing package
     if family.packages.filter(
-        id=family.id, status__in=[PackageStatus.NEW, PackageStatus.PACKED]
+        family=family, status__in=[PackageStatus.NEW, PackageStatus.PACKED]
     ).exists():
         raise serializers.ValidationError("Family has existing package")
 
-    request_parsed = FamilyCreateUpdateRequest(data=request.data)
-    request_parsed.is_valid(raise_exception=True)
+    # request_parsed = FamilyCreateUpdateRequest(data=request.data)
+    # request_parsed.is_valid(raise_exception=True)
     family.is_active = False
     family.save()
     setCreateUpdateProperty(family, request.user, ActionType.UPDATE)
