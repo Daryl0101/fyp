@@ -193,11 +193,17 @@ def assignment_update(
 def unassignment_update(
     inventory_candidate_list: Inventories, allocated_inventories: dict[Inventory, int]
 ):
-    for m in list(
-        set(inventory_candidate_list.select_all_inventories())
-        & set(allocated_inventories.keys())
-    ):
-        m.quantity += allocated_inventories[m]
+    # for m in list(
+    #     set(inventory_candidate_list.select_all_inventories())
+    #     & set(allocated_inventories.keys())
+    # ):
+    #     m.quantity += allocated_inventories[m]
+
+    for m in inventory_candidate_list.select_all_inventories():
+        for allocated_inventory, quantity in allocated_inventories.items():
+            if m.id == allocated_inventory.id:
+                m.quantity += quantity
+                break
 
 
 # endregion
@@ -520,7 +526,7 @@ def adaptive_heuristic(
         total_beneficiaries=total_beneficiaries,
         served_beneficiaries=served_beneficiaries,
         tabu_beneficiaries=tabu_beneficiaries,
-        total_inventories=copy.deepcopy(inventories),
+        total_inventories=inventories,
         weights=weights,
     )
     best_solution = current_solution
@@ -551,7 +557,7 @@ def adaptive_heuristic(
                 total_beneficiaries=total_beneficiaries,
                 served_beneficiaries=current_served_beneficiaries,
                 tabu_beneficiaries=tabu_beneficiaries,
-                total_inventories=copy.deepcopy(inventories),
+                total_inventories=inventories,
                 weights=weights,
             )
             if current_solution < best_solution:  # better solution found
