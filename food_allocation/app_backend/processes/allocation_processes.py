@@ -520,7 +520,7 @@ def adaptive_heuristic(
         total_beneficiaries=total_beneficiaries,
         served_beneficiaries=served_beneficiaries,
         tabu_beneficiaries=tabu_beneficiaries,
-        total_inventories=inventories,
+        total_inventories=copy.deepcopy(inventories),
         weights=weights,
     )
     best_solution = current_solution
@@ -551,7 +551,7 @@ def adaptive_heuristic(
                 total_beneficiaries=total_beneficiaries,
                 served_beneficiaries=current_served_beneficiaries,
                 tabu_beneficiaries=tabu_beneficiaries,
-                total_inventories=inventories,
+                total_inventories=copy.deepcopy(inventories),
                 weights=weights,
             )
             if current_solution < best_solution:  # better solution found
