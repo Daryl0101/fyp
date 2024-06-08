@@ -339,7 +339,7 @@ def repair_operator(
                 scip_result["objective_value"]
             )
             chosen_beneficiary.status_code = scip_result["status_code"]
-            if scip_result["status"] == "SUCCESS":  # feasible case
+            if len(scip_result["result"]) > 0:  # feasible case
                 allocated_inventories = {}
                 for i in scip_result["result"]:
                     assignment_update(
@@ -433,6 +433,10 @@ def scip(
                 == float(beneficiary.nutrients[nutrient])
             )
         )
+
+    constraints.append(
+        solver.Add(solver.Sum(foods[j] for j in range(len(inventories))) >= 1)
+    )
 
     print("Number of constraints =", solver.NumConstraints())
 
