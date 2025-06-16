@@ -416,10 +416,10 @@ def processSearchFamilies(request):
 
     # Place nulls first for last_received_date
     # Reference https://stackoverflow.com/questions/70719951/django-admin-order-by-a-nullable-date-with-null-values-at-the-end
-    if scso == "last_received_date":
-        families = families.order_by(F("last_received_date").desc(nulls_first=True))
-    elif scso == "-last_received_date":
-        families = families.order_by(F("last_received_date").asc(nulls_last=True))
+    if scso == "-last_received_date":
+        families = families.order_by(F("last_received_date").desc(nulls_last=True))
+    elif scso == "last_received_date":
+        families = families.order_by(F("last_received_date").asc(nulls_first=True))
     else:
         families = families.order_by(scso)
 

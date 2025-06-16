@@ -4,7 +4,6 @@ import cv2
 from PIL import Image, ImageEnhance
 import numpy as np
 import os
-import tensorflow as tf
 import google.generativeai as genai
 
 # region Gemini Configs
@@ -54,46 +53,6 @@ def upload_to_gemini(path, mime_type=None):
     file = genai.upload_file(path, mime_type=mime_type)
     print(f"Uploaded file '{file.display_name}' as: {file.uri}")
     return file
-
-
-# region Classes
-class NutritionTableDetector(object):
-    def __init__(self):
-        PATH_TO_MODEL = "app_backend/lib/data/frozen_inference_graph.pb"
-        self.detection_graph = tf.Graph()
-        with self.detection_graph.as_default():
-            od_graph_def = tf.compat.v1.GraphDef()
-            # Works up to here.
-            with tf.compat.v2.io.gfile.GFile(PATH_TO_MODEL, "rb") as fid:
-                serialized_graph = fid.read()
-                od_graph_def.ParseFromString(serialized_graph)
-                tf.import_graph_def(od_graph_def, name="")
-            self.image_tensor = self.detection_graph.get_tensor_by_name(
-                "image_tensor:0"
-            )
-            self.d_boxes = self.detection_graph.get_tensor_by_name("detection_boxes:0")
-            self.d_scores = self.detection_graph.get_tensor_by_name(
-                "detection_scores:0"
-            )
-            self.d_classes = self.detection_graph.get_tensor_by_name(
-                "detection_classes:0"
-            )
-            self.num_d = self.detection_graph.get_tensor_by_name("num_detections:0")
-        self.sess = tf.compat.v1.Session(graph=self.detection_graph)
-
-    def get_classification(self, img):
-        # Bounding Box Detection.
-        with self.detection_graph.as_default():
-            # Expand dimension since the model expects image to have shape [1, None, None, 3].
-            img_expanded = np.expand_dims(img, axis=0)
-            (boxes, scores, classes, num) = self.sess.run(
-                [self.d_boxes, self.d_scores, self.d_classes, self.num_d],
-                feed_dict={self.image_tensor: img_expanded},
-            )
-        return boxes, scores, classes, num
-
-
-# endregion
 
 
 # region Crop Function
@@ -236,47 +195,14 @@ def draw_boxes(img, image_name, boxes, scale):
 # endregion
 
 
-# region Load Globals
-def load_table_model():
-    """
-    load trained weights for the table detection model
-    """
-    global table_obj
-    table_obj = NutritionTableDetector()
-    print("Table Weights Loaded!")
-
-
-# endregion
-
-
 def detect_advanced(img_obj: Image):
     """
     This function uses Gemini API to extract the nutrient labels and their values from the image
     @param img_path: Pathto the image for which labels to be extracted
     """
     image = cv2.cvtColor(np.array(img_obj), cv2.COLOR_RGB2BGR)
-    boxes, scores, classes, num = table_obj.get_classification(image)
-    # Get the dimensions of the image
-    width = image.shape[1]
-    height = image.shape[0]
 
-    # Select the bounding box with most confident output
-    ymin = boxes[0][0][0] * height
-    xmin = boxes[0][0][1] * width
-    ymax = boxes[0][0][2] * height
-    xmax = boxes[0][0][3] * width
-
-    # print(xmin, ymin, xmax, ymax, scores[0][0])
-    coords = (xmin, ymin, xmax, ymax)
-
-    # Crop the image with the given bounding box
-    cropped_image = crop(image, coords, "", 0, False)
-
-    # Apply several filters to the image for better results in OCR
-    cropped_image = preprocess_for_ocr(cropped_image, 3)
-
-    # Use Gemini API to extract the nutrient labels and their values from the image
-    response = model.generate_content(Image.fromarray(cropped_image))
+    response = model.generate_content(Image.fromarray(image))
     nutrient_dict = json.loads(response.text)
 
     # Throw error if Gemini returns invalid keys
@@ -302,6 +228,3 @@ def detect_advanced(img_obj: Image):
             nutrient_dict[i] = 0
 
     return nutrient_dict
-
-
-load_table_model()
