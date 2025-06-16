@@ -1,6 +1,6 @@
 # ReAlloc - Food Allocation Management System
 
-A comprehensive Django-based food allocation and inventory management system designed for NGOs and food banks to efficiently manage food distribution to families in need.
+A comprehensive Django-based API for a food allocation and inventory management system designed for NGOs and food banks to efficiently manage food distribution to families in need. [Click here to hop to Frontend](https://github.com/Daryl0101/realloc-fe)
 
 ## 🎯 Overview
 
